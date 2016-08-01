@@ -1,7 +1,6 @@
 node_modules
 dist
 .DS_Store
-demo/demo.js
 demo/demo.js.map
 demo/demo-build.js
 demo/demo-build.js.map

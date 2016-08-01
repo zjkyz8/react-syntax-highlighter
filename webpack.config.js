@@ -22,8 +22,7 @@ module.exports = {
               plugins: ['transform-object-rest-spread', 'transform-runtime']
             },
             include: path.join(__dirname, 'demo')
-        },
-        { test: /\.css$/, loader: 'style!css' }
+        }
       ]
   },
   plugins: [
