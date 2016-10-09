@@ -90,8 +90,13 @@
 	
 	    var initialCodeString = 'function createStyleObject(classNames, style) {\n  return classNames.reduce((styleObject, className) => {\n    return {...styleObject, ...style[className]};\n  }, {});\n}\n\nfunction createClassNameString(classNames) {\n  return classNames.join(\' \');\n}\n\nfunction createChildren(style, useInlineStyles) {\n  let childrenCount = 0;\n  return children => {\n    childrenCount += 1;\n    return children.map((child, i) => createElement({\n      node: child,\n      style,\n      useInlineStyles,\n      key:`code-segment-${childrenCount}-${i}`\n    }));\n  }\n}\n\nfunction createElement({ node, style, useInlineStyles, key }) {\n  const { properties, type, tagName, value } = node;\n  if (type === "text") {\n    return value;\n  } else if (tagName) {\n    const TagName = tagName;\n    const childrenCreator = createChildren(style, useInlineStyles);\n    const props = (\n      useInlineStyles\n      ?\n      { style: createStyleObject(properties.className, style) }\n      :\n      { className: createClassNameString(properties.className) }\n    );\n    const children = childrenCreator(node.children);\n    return <TagName key={key} {...props}>{children}</TagName>;\n  }\n}\n  ';
 	    _this.state = {
+<<<<<<< HEAD
 	      selected: 'docco',
 	      style: __webpack_require__(432).default,
+=======
+	      selected: 'tomorrow-night-eighties',
+	      style: __webpack_require__(335).default,
+>>>>>>> 5368c9a... update demo
 	      code: initialCodeString,
 	      showLineNumbers: false
 	    };
@@ -175,7 +180,7 @@
 	            { style: { flex: 1, width: '50%' } },
 	            _react2.default.createElement(
 	              _dist2.default,
-	              { language: 'javascript', style: this.state.style, showLineNumbers: this.state.showLineNumbers },
+	              { style: this.state.style, showLineNumbers: this.state.showLineNumbers },
 	              this.state.code
 	            )
 	          )
@@ -17255,7 +17260,246 @@
 	module.exports = ReactComponentTreeHook;
 
 /***/ },
+<<<<<<< HEAD
 /* 209 */
+=======
+/* 117 */
+/***/ function(module, exports) {
+
+	/**
+	 * Copyright (c) 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @typechecks
+	 * 
+	 */
+	
+	/*eslint-disable no-self-compare */
+	
+	'use strict';
+	
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	
+	/**
+	 * inlined Object.is polyfill to avoid requiring consumers ship their own
+	 * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+	 */
+	function is(x, y) {
+	  // SameValue algorithm
+	  if (x === y) {
+	    // Steps 1-5, 7-10
+	    // Steps 6.b-6.e: +0 != -0
+	    // Added the nonzero y check to make Flow happy, but it is redundant
+	    return x !== 0 || y !== 0 || 1 / x === 1 / y;
+	  } else {
+	    // Step 6.a: NaN == NaN
+	    return x !== x && y !== y;
+	  }
+	}
+	
+	/**
+	 * Performs equality by iterating through keys on an object and returning false
+	 * when any key has values which are not strictly equal between the arguments.
+	 * Returns true when the values of all keys are strictly equal.
+	 */
+	function shallowEqual(objA, objB) {
+	  if (is(objA, objB)) {
+	    return true;
+	  }
+	
+	  if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+	    return false;
+	  }
+	
+	  var keysA = Object.keys(objA);
+	  var keysB = Object.keys(objB);
+	
+	  if (keysA.length !== keysB.length) {
+	    return false;
+	  }
+	
+	  // Test for A's keys different from B.
+	  for (var i = 0; i < keysA.length; i++) {
+	    if (!hasOwnProperty.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
+	      return false;
+	    }
+	  }
+	
+	  return true;
+	}
+	
+	module.exports = shallowEqual;
+
+/***/ },
+/* 118 */
+/***/ function(module, exports) {
+
+	/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule shouldUpdateReactComponent
+	 */
+	
+	'use strict';
+	
+	/**
+	 * Given a `prevElement` and `nextElement`, determines if the existing
+	 * instance should be updated as opposed to being destroyed or replaced by a new
+	 * instance. Both arguments are elements. This ensures that this logic can
+	 * operate on stateless trees without any backing instance.
+	 *
+	 * @param {?object} prevElement
+	 * @param {?object} nextElement
+	 * @return {boolean} True if the existing instance should be updated.
+	 * @protected
+	 */
+	
+	function shouldUpdateReactComponent(prevElement, nextElement) {
+	  var prevEmpty = prevElement === null || prevElement === false;
+	  var nextEmpty = nextElement === null || nextElement === false;
+	  if (prevEmpty || nextEmpty) {
+	    return prevEmpty === nextEmpty;
+	  }
+	
+	  var prevType = typeof prevElement;
+	  var nextType = typeof nextElement;
+	  if (prevType === 'string' || prevType === 'number') {
+	    return nextType === 'string' || nextType === 'number';
+	  } else {
+	    return nextType === 'object' && prevElement.type === nextElement.type && prevElement.key === nextElement.key;
+	  }
+	}
+	
+	module.exports = shouldUpdateReactComponent;
+
+/***/ },
+/* 119 */
+/***/ function(module, exports) {
+
+	/**
+	 * Copyright 2014-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactEmptyComponent
+	 */
+	
+	'use strict';
+	
+	var emptyComponentFactory;
+	
+	var ReactEmptyComponentInjection = {
+	  injectEmptyComponentFactory: function (factory) {
+	    emptyComponentFactory = factory;
+	  }
+	};
+	
+	var ReactEmptyComponent = {
+	  create: function (instantiate) {
+	    return emptyComponentFactory(instantiate);
+	  }
+	};
+	
+	ReactEmptyComponent.injection = ReactEmptyComponentInjection;
+	
+	module.exports = ReactEmptyComponent;
+
+/***/ },
+/* 120 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2014-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactHostComponent
+	 */
+	
+	'use strict';
+	
+	var _prodInvariant = __webpack_require__(6),
+	    _assign = __webpack_require__(3);
+	
+	var invariant = __webpack_require__(7);
+	
+	var genericComponentClass = null;
+	// This registry keeps track of wrapper classes around host tags.
+	var tagToComponentClass = {};
+	var textComponentClass = null;
+	
+	var ReactHostComponentInjection = {
+	  // This accepts a class that receives the tag string. This is a catch all
+	  // that can render any kind of tag.
+	  injectGenericComponentClass: function (componentClass) {
+	    genericComponentClass = componentClass;
+	  },
+	  // This accepts a text component class that takes the text string to be
+	  // rendered as props.
+	  injectTextComponentClass: function (componentClass) {
+	    textComponentClass = componentClass;
+	  },
+	  // This accepts a keyed object with classes as values. Each key represents a
+	  // tag. That particular tag will use this class instead of the generic one.
+	  injectComponentClasses: function (componentClasses) {
+	    _assign(tagToComponentClass, componentClasses);
+	  }
+	};
+	
+	/**
+	 * Get a host internal component class for a specific tag.
+	 *
+	 * @param {ReactElement} element The element to create.
+	 * @return {function} The internal class constructor function.
+	 */
+	function createInternalComponent(element) {
+	  !genericComponentClass ?  false ? invariant(false, 'There is no registered component for the tag %s', element.type) : _prodInvariant('111', element.type) : void 0;
+	  return new genericComponentClass(element);
+	}
+	
+	/**
+	 * @param {ReactText} text
+	 * @return {ReactComponent}
+	 */
+	function createInstanceForText(text) {
+	  return new textComponentClass(text);
+	}
+	
+	/**
+	 * @param {ReactComponent} component
+	 * @return {boolean}
+	 */
+	function isTextComponent(component) {
+	  return component instanceof textComponentClass;
+	}
+	
+	var ReactHostComponent = {
+	  createInternalComponent: createInternalComponent,
+	  createInstanceForText: createInstanceForText,
+	  isTextComponent: isTextComponent,
+	  injection: ReactHostComponentInjection
+	};
+	
+	module.exports = ReactHostComponent;
+
+/***/ },
+/* 121 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -21889,6 +22133,7 @@
 	
 	exports.default = function (lowlight, defaultStyle) {
 	  return function SyntaxHighlighter(props) {
+<<<<<<< HEAD
 	    var language = props.language,
 	        children = props.children,
 	        _props$style = props.style,
@@ -21906,6 +22151,25 @@
 	        lineNumberContainerStyle = props.lineNumberContainerStyle,
 	        lineNumberStyle = props.lineNumberStyle,
 	        rest = (0, _objectWithoutProperties3.default)(props, ['language', 'children', 'style', 'customStyle', 'codeTagProps', 'useInlineStyles', 'showLineNumbers', 'startingLineNumber', 'lineNumberContainerStyle', 'lineNumberStyle']);
+=======
+	    var language = props.language;
+	    var children = props.children;
+	    var _props$style = props.style;
+	    var style = _props$style === undefined ? defaultStyle : _props$style;
+	    var _props$customStyle = props.customStyle;
+	    var customStyle = _props$customStyle === undefined ? {} : _props$customStyle;
+	    var _props$codeTagProps = props.codeTagProps;
+	    var codeTagProps = _props$codeTagProps === undefined ? {} : _props$codeTagProps;
+	    var _props$useInlineStyle = props.useInlineStyles;
+	    var useInlineStyles = _props$useInlineStyle === undefined ? true : _props$useInlineStyle;
+	    var _props$showLineNumber = props.showLineNumbers;
+	    var showLineNumbers = _props$showLineNumber === undefined ? false : _props$showLineNumber;
+	    var _props$startingLineNu = props.startingLineNumber;
+	    var startingLineNumber = _props$startingLineNu === undefined ? 1 : _props$startingLineNu;
+	    var lineNumberStyle = props.lineNumberStyle;
+	
+	    var rest = _objectWithoutProperties(props, ['language', 'children', 'style', 'customStyle', 'codeTagProps', 'useInlineStyles', 'showLineNumbers', 'startingLineNumber', 'lineNumberStyle']);
+>>>>>>> 5368c9a... update demo
 	
 	    var codeTree = language ? lowlight.highlight(language, children) : lowlight.highlightAuto(children);
 	    var defaultPreStyle = style.hljs || { backgroundColor: '#fff' };
@@ -22003,6 +22267,7 @@
 	}
 	
 	function createElement(_ref) {
+<<<<<<< HEAD
 	  var node = _ref.node,
 	      style = _ref.style,
 	      useInlineStyles = _ref.useInlineStyles,
@@ -22011,6 +22276,16 @@
 	      type = node.type,
 	      tagName = node.tagName,
 	      value = node.value;
+=======
+	  var node = _ref.node;
+	  var style = _ref.style;
+	  var useInlineStyles = _ref.useInlineStyles;
+	  var key = _ref.key;
+	  var properties = node.properties;
+	  var type = node.type;
+	  var tagName = node.tagName;
+	  var value = node.value;
+>>>>>>> 5368c9a... update demo
 	
 	  if (type === 'text') {
 	    return value;
@@ -24038,7 +24313,320 @@
 
 
 /***/ },
+<<<<<<< HEAD
 /* 264 */
+=======
+/* 167 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = {
+	    "hljs": {
+	        "display": "block",
+	        "overflowX": "auto",
+	        "padding": "0.5em",
+	        "background": "#F0F0F0",
+	        "color": "#444"
+	    },
+	    "hljs-subst": {
+	        "color": "#444"
+	    },
+	    "hljs-comment": {
+	        "color": "#888888"
+	    },
+	    "hljs-keyword": {
+	        "fontWeight": "bold"
+	    },
+	    "hljs-attribute": {
+	        "fontWeight": "bold"
+	    },
+	    "hljs-selector-tag": {
+	        "fontWeight": "bold"
+	    },
+	    "hljs-meta-keyword": {
+	        "fontWeight": "bold"
+	    },
+	    "hljs-doctag": {
+	        "fontWeight": "bold"
+	    },
+	    "hljs-name": {
+	        "fontWeight": "bold"
+	    },
+	    "hljs-type": {
+	        "color": "#880000"
+	    },
+	    "hljs-string": {
+	        "color": "#880000"
+	    },
+	    "hljs-number": {
+	        "color": "#880000"
+	    },
+	    "hljs-selector-id": {
+	        "color": "#880000"
+	    },
+	    "hljs-selector-class": {
+	        "color": "#880000"
+	    },
+	    "hljs-quote": {
+	        "color": "#880000"
+	    },
+	    "hljs-template-tag": {
+	        "color": "#880000"
+	    },
+	    "hljs-deletion": {
+	        "color": "#880000"
+	    },
+	    "hljs-title": {
+	        "color": "#880000",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-section": {
+	        "color": "#880000",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-regexp": {
+	        "color": "#BC6060"
+	    },
+	    "hljs-symbol": {
+	        "color": "#BC6060"
+	    },
+	    "hljs-variable": {
+	        "color": "#BC6060"
+	    },
+	    "hljs-template-variable": {
+	        "color": "#BC6060"
+	    },
+	    "hljs-link": {
+	        "color": "#BC6060"
+	    },
+	    "hljs-selector-attr": {
+	        "color": "#BC6060"
+	    },
+	    "hljs-selector-pseudo": {
+	        "color": "#BC6060"
+	    },
+	    "hljs-literal": {
+	        "color": "#78A960"
+	    },
+	    "hljs-built_in": {
+	        "color": "#397300"
+	    },
+	    "hljs-bullet": {
+	        "color": "#397300"
+	    },
+	    "hljs-code": {
+	        "color": "#397300"
+	    },
+	    "hljs-addition": {
+	        "color": "#397300"
+	    },
+	    "hljs-meta": {
+	        "color": "#1f7199"
+	    },
+	    "hljs-meta-string": {
+	        "color": "#4d99bf"
+	    },
+	    "hljs-emphasis": {
+	        "fontStyle": "italic"
+	    },
+	    "hljs-strong": {
+	        "fontWeight": "bold"
+	    }
+	};
+
+/***/ },
+/* 168 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @author Titus Wormer
+	 * @copyright 2016 Titus Wormer
+	 * @license MIT
+	 * @module lowlight
+	 * @fileoverview Virtual syntax highlighting for virtual
+	 *   DOMs and non-HTML things.
+	 */
+	
+	'use strict';
+	
+	/* Expose. */
+	var low = module.exports = __webpack_require__(165);
+	
+	low.registerLanguage('1c', __webpack_require__(169));
+	low.registerLanguage('abnf', __webpack_require__(170));
+	low.registerLanguage('accesslog', __webpack_require__(171));
+	low.registerLanguage('actionscript', __webpack_require__(172));
+	low.registerLanguage('ada', __webpack_require__(173));
+	low.registerLanguage('apache', __webpack_require__(174));
+	low.registerLanguage('applescript', __webpack_require__(175));
+	low.registerLanguage('cpp', __webpack_require__(176));
+	low.registerLanguage('arduino', __webpack_require__(177));
+	low.registerLanguage('armasm', __webpack_require__(178));
+	low.registerLanguage('xml', __webpack_require__(179));
+	low.registerLanguage('asciidoc', __webpack_require__(180));
+	low.registerLanguage('aspectj', __webpack_require__(181));
+	low.registerLanguage('autohotkey', __webpack_require__(182));
+	low.registerLanguage('autoit', __webpack_require__(183));
+	low.registerLanguage('avrasm', __webpack_require__(184));
+	low.registerLanguage('awk', __webpack_require__(185));
+	low.registerLanguage('axapta', __webpack_require__(186));
+	low.registerLanguage('bash', __webpack_require__(187));
+	low.registerLanguage('basic', __webpack_require__(188));
+	low.registerLanguage('bnf', __webpack_require__(189));
+	low.registerLanguage('brainfuck', __webpack_require__(190));
+	low.registerLanguage('cal', __webpack_require__(191));
+	low.registerLanguage('capnproto', __webpack_require__(192));
+	low.registerLanguage('ceylon', __webpack_require__(193));
+	low.registerLanguage('clojure', __webpack_require__(194));
+	low.registerLanguage('clojure-repl', __webpack_require__(195));
+	low.registerLanguage('cmake', __webpack_require__(196));
+	low.registerLanguage('coffeescript', __webpack_require__(197));
+	low.registerLanguage('coq', __webpack_require__(198));
+	low.registerLanguage('cos', __webpack_require__(199));
+	low.registerLanguage('crmsh', __webpack_require__(200));
+	low.registerLanguage('crystal', __webpack_require__(201));
+	low.registerLanguage('cs', __webpack_require__(202));
+	low.registerLanguage('csp', __webpack_require__(203));
+	low.registerLanguage('css', __webpack_require__(204));
+	low.registerLanguage('d', __webpack_require__(205));
+	low.registerLanguage('markdown', __webpack_require__(206));
+	low.registerLanguage('dart', __webpack_require__(207));
+	low.registerLanguage('delphi', __webpack_require__(208));
+	low.registerLanguage('diff', __webpack_require__(209));
+	low.registerLanguage('django', __webpack_require__(210));
+	low.registerLanguage('dns', __webpack_require__(211));
+	low.registerLanguage('dockerfile', __webpack_require__(212));
+	low.registerLanguage('dos', __webpack_require__(213));
+	low.registerLanguage('dsconfig', __webpack_require__(214));
+	low.registerLanguage('dts', __webpack_require__(215));
+	low.registerLanguage('dust', __webpack_require__(216));
+	low.registerLanguage('ebnf', __webpack_require__(217));
+	low.registerLanguage('elixir', __webpack_require__(218));
+	low.registerLanguage('elm', __webpack_require__(219));
+	low.registerLanguage('ruby', __webpack_require__(220));
+	low.registerLanguage('erb', __webpack_require__(221));
+	low.registerLanguage('erlang-repl', __webpack_require__(222));
+	low.registerLanguage('erlang', __webpack_require__(223));
+	low.registerLanguage('excel', __webpack_require__(224));
+	low.registerLanguage('fix', __webpack_require__(225));
+	low.registerLanguage('fortran', __webpack_require__(226));
+	low.registerLanguage('fsharp', __webpack_require__(227));
+	low.registerLanguage('gams', __webpack_require__(228));
+	low.registerLanguage('gauss', __webpack_require__(229));
+	low.registerLanguage('gcode', __webpack_require__(230));
+	low.registerLanguage('gherkin', __webpack_require__(231));
+	low.registerLanguage('glsl', __webpack_require__(232));
+	low.registerLanguage('go', __webpack_require__(233));
+	low.registerLanguage('golo', __webpack_require__(234));
+	low.registerLanguage('gradle', __webpack_require__(235));
+	low.registerLanguage('groovy', __webpack_require__(236));
+	low.registerLanguage('haml', __webpack_require__(237));
+	low.registerLanguage('handlebars', __webpack_require__(238));
+	low.registerLanguage('haskell', __webpack_require__(239));
+	low.registerLanguage('haxe', __webpack_require__(240));
+	low.registerLanguage('hsp', __webpack_require__(241));
+	low.registerLanguage('htmlbars', __webpack_require__(242));
+	low.registerLanguage('http', __webpack_require__(243));
+	low.registerLanguage('inform7', __webpack_require__(244));
+	low.registerLanguage('ini', __webpack_require__(245));
+	low.registerLanguage('irpf90', __webpack_require__(246));
+	low.registerLanguage('java', __webpack_require__(247));
+	low.registerLanguage('javascript', __webpack_require__(248));
+	low.registerLanguage('json', __webpack_require__(249));
+	low.registerLanguage('julia', __webpack_require__(250));
+	low.registerLanguage('kotlin', __webpack_require__(251));
+	low.registerLanguage('lasso', __webpack_require__(252));
+	low.registerLanguage('ldif', __webpack_require__(253));
+	low.registerLanguage('less', __webpack_require__(254));
+	low.registerLanguage('lisp', __webpack_require__(255));
+	low.registerLanguage('livecodeserver', __webpack_require__(256));
+	low.registerLanguage('livescript', __webpack_require__(257));
+	low.registerLanguage('lsl', __webpack_require__(258));
+	low.registerLanguage('lua', __webpack_require__(259));
+	low.registerLanguage('makefile', __webpack_require__(260));
+	low.registerLanguage('mathematica', __webpack_require__(261));
+	low.registerLanguage('matlab', __webpack_require__(262));
+	low.registerLanguage('maxima', __webpack_require__(263));
+	low.registerLanguage('mel', __webpack_require__(264));
+	low.registerLanguage('mercury', __webpack_require__(265));
+	low.registerLanguage('mipsasm', __webpack_require__(266));
+	low.registerLanguage('mizar', __webpack_require__(267));
+	low.registerLanguage('perl', __webpack_require__(268));
+	low.registerLanguage('mojolicious', __webpack_require__(269));
+	low.registerLanguage('monkey', __webpack_require__(270));
+	low.registerLanguage('moonscript', __webpack_require__(271));
+	low.registerLanguage('nginx', __webpack_require__(272));
+	low.registerLanguage('nimrod', __webpack_require__(273));
+	low.registerLanguage('nix', __webpack_require__(274));
+	low.registerLanguage('nsis', __webpack_require__(275));
+	low.registerLanguage('objectivec', __webpack_require__(276));
+	low.registerLanguage('ocaml', __webpack_require__(277));
+	low.registerLanguage('openscad', __webpack_require__(278));
+	low.registerLanguage('oxygene', __webpack_require__(279));
+	low.registerLanguage('parser3', __webpack_require__(280));
+	low.registerLanguage('pf', __webpack_require__(281));
+	low.registerLanguage('php', __webpack_require__(282));
+	low.registerLanguage('pony', __webpack_require__(283));
+	low.registerLanguage('powershell', __webpack_require__(284));
+	low.registerLanguage('processing', __webpack_require__(285));
+	low.registerLanguage('profile', __webpack_require__(286));
+	low.registerLanguage('prolog', __webpack_require__(287));
+	low.registerLanguage('protobuf', __webpack_require__(288));
+	low.registerLanguage('puppet', __webpack_require__(289));
+	low.registerLanguage('purebasic', __webpack_require__(290));
+	low.registerLanguage('python', __webpack_require__(291));
+	low.registerLanguage('q', __webpack_require__(292));
+	low.registerLanguage('qml', __webpack_require__(293));
+	low.registerLanguage('r', __webpack_require__(294));
+	low.registerLanguage('rib', __webpack_require__(295));
+	low.registerLanguage('roboconf', __webpack_require__(296));
+	low.registerLanguage('rsl', __webpack_require__(297));
+	low.registerLanguage('ruleslanguage', __webpack_require__(298));
+	low.registerLanguage('rust', __webpack_require__(299));
+	low.registerLanguage('scala', __webpack_require__(300));
+	low.registerLanguage('scheme', __webpack_require__(301));
+	low.registerLanguage('scilab', __webpack_require__(302));
+	low.registerLanguage('scss', __webpack_require__(303));
+	low.registerLanguage('smali', __webpack_require__(304));
+	low.registerLanguage('smalltalk', __webpack_require__(305));
+	low.registerLanguage('sml', __webpack_require__(306));
+	low.registerLanguage('sqf', __webpack_require__(307));
+	low.registerLanguage('sql', __webpack_require__(308));
+	low.registerLanguage('stan', __webpack_require__(309));
+	low.registerLanguage('stata', __webpack_require__(310));
+	low.registerLanguage('step21', __webpack_require__(311));
+	low.registerLanguage('stylus', __webpack_require__(312));
+	low.registerLanguage('subunit', __webpack_require__(313));
+	low.registerLanguage('swift', __webpack_require__(314));
+	low.registerLanguage('taggerscript', __webpack_require__(315));
+	low.registerLanguage('yaml', __webpack_require__(316));
+	low.registerLanguage('tap', __webpack_require__(317));
+	low.registerLanguage('tcl', __webpack_require__(318));
+	low.registerLanguage('tex', __webpack_require__(319));
+	low.registerLanguage('thrift', __webpack_require__(320));
+	low.registerLanguage('tp', __webpack_require__(321));
+	low.registerLanguage('twig', __webpack_require__(322));
+	low.registerLanguage('typescript', __webpack_require__(323));
+	low.registerLanguage('vala', __webpack_require__(324));
+	low.registerLanguage('vbnet', __webpack_require__(325));
+	low.registerLanguage('vbscript', __webpack_require__(326));
+	low.registerLanguage('vbscript-html', __webpack_require__(327));
+	low.registerLanguage('verilog', __webpack_require__(328));
+	low.registerLanguage('vhdl', __webpack_require__(329));
+	low.registerLanguage('vim', __webpack_require__(330));
+	low.registerLanguage('x86asm', __webpack_require__(331));
+	low.registerLanguage('xl', __webpack_require__(332));
+	low.registerLanguage('xquery', __webpack_require__(333));
+	low.registerLanguage('zephir', __webpack_require__(334));
+
+
+/***/ },
+/* 169 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	module.exports = function(hljs){
@@ -39598,6 +40186,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
+<<<<<<< HEAD
 		"./agate": 434,
 		"./agate.js": 434,
 		"./androidstudio": 435,
@@ -39758,6 +40347,168 @@
 		"./xt256.js": 510,
 		"./zenburn": 511,
 		"./zenburn.js": 511
+=======
+		"./agate": 337,
+		"./agate.js": 337,
+		"./androidstudio": 338,
+		"./androidstudio.js": 338,
+		"./arduino-light": 339,
+		"./arduino-light.js": 339,
+		"./arta": 340,
+		"./arta.js": 340,
+		"./ascetic": 341,
+		"./ascetic.js": 341,
+		"./atelier-cave-dark": 342,
+		"./atelier-cave-dark.js": 342,
+		"./atelier-cave-light": 343,
+		"./atelier-cave-light.js": 343,
+		"./atelier-dune-dark": 344,
+		"./atelier-dune-dark.js": 344,
+		"./atelier-dune-light": 345,
+		"./atelier-dune-light.js": 345,
+		"./atelier-estuary-dark": 346,
+		"./atelier-estuary-dark.js": 346,
+		"./atelier-estuary-light": 347,
+		"./atelier-estuary-light.js": 347,
+		"./atelier-forest-dark": 348,
+		"./atelier-forest-dark.js": 348,
+		"./atelier-forest-light": 349,
+		"./atelier-forest-light.js": 349,
+		"./atelier-heath-dark": 350,
+		"./atelier-heath-dark.js": 350,
+		"./atelier-heath-light": 351,
+		"./atelier-heath-light.js": 351,
+		"./atelier-lakeside-dark": 352,
+		"./atelier-lakeside-dark.js": 352,
+		"./atelier-lakeside-light": 353,
+		"./atelier-lakeside-light.js": 353,
+		"./atelier-plateau-dark": 354,
+		"./atelier-plateau-dark.js": 354,
+		"./atelier-plateau-light": 355,
+		"./atelier-plateau-light.js": 355,
+		"./atelier-savanna-dark": 356,
+		"./atelier-savanna-dark.js": 356,
+		"./atelier-savanna-light": 357,
+		"./atelier-savanna-light.js": 357,
+		"./atelier-seaside-dark": 358,
+		"./atelier-seaside-dark.js": 358,
+		"./atelier-seaside-light": 359,
+		"./atelier-seaside-light.js": 359,
+		"./atelier-sulphurpool-dark": 360,
+		"./atelier-sulphurpool-dark.js": 360,
+		"./atelier-sulphurpool-light": 361,
+		"./atelier-sulphurpool-light.js": 361,
+		"./atom-one-dark": 362,
+		"./atom-one-dark.js": 362,
+		"./atom-one-light": 363,
+		"./atom-one-light.js": 363,
+		"./brown-paper": 364,
+		"./brown-paper.js": 364,
+		"./codepen-embed": 365,
+		"./codepen-embed.js": 365,
+		"./color-brewer": 366,
+		"./color-brewer.js": 366,
+		"./darcula": 367,
+		"./darcula.js": 367,
+		"./dark": 368,
+		"./dark.js": 368,
+		"./darkula": 369,
+		"./darkula.js": 369,
+		"./default": 370,
+		"./default-style": 167,
+		"./default-style.js": 167,
+		"./default.js": 370,
+		"./defaultStyle": 371,
+		"./defaultStyle.js": 371,
+		"./docco": 372,
+		"./docco.js": 372,
+		"./dracula": 373,
+		"./dracula.js": 373,
+		"./far": 374,
+		"./far.js": 374,
+		"./foundation": 375,
+		"./foundation.js": 375,
+		"./github": 376,
+		"./github-gist": 377,
+		"./github-gist.js": 377,
+		"./github.js": 376,
+		"./googlecode": 378,
+		"./googlecode.js": 378,
+		"./grayscale": 379,
+		"./grayscale.js": 379,
+		"./gruvbox-dark": 380,
+		"./gruvbox-dark.js": 380,
+		"./gruvbox-light": 381,
+		"./gruvbox-light.js": 381,
+		"./hopscotch": 382,
+		"./hopscotch.js": 382,
+		"./hybrid": 383,
+		"./hybrid.js": 383,
+		"./idea": 384,
+		"./idea.js": 384,
+		"./index": 385,
+		"./index.js": 385,
+		"./ir-black": 386,
+		"./ir-black.js": 386,
+		"./kimbie.dark": 387,
+		"./kimbie.dark.js": 387,
+		"./kimbie.light": 388,
+		"./kimbie.light.js": 388,
+		"./magula": 389,
+		"./magula.js": 389,
+		"./mono-blue": 390,
+		"./mono-blue.js": 390,
+		"./monokai": 392,
+		"./monokai-sublime": 391,
+		"./monokai-sublime.js": 391,
+		"./monokai.js": 392,
+		"./obsidian": 393,
+		"./obsidian.js": 393,
+		"./ocean": 394,
+		"./ocean.js": 394,
+		"./paraiso-dark": 395,
+		"./paraiso-dark.js": 395,
+		"./paraiso-light": 396,
+		"./paraiso-light.js": 396,
+		"./pojoaque": 397,
+		"./pojoaque.js": 397,
+		"./purebasic": 398,
+		"./purebasic.js": 398,
+		"./qtcreator_dark": 399,
+		"./qtcreator_dark.js": 399,
+		"./qtcreator_light": 400,
+		"./qtcreator_light.js": 400,
+		"./railscasts": 401,
+		"./railscasts.js": 401,
+		"./rainbow": 402,
+		"./rainbow.js": 402,
+		"./school-book": 403,
+		"./school-book.js": 403,
+		"./solarized-dark": 404,
+		"./solarized-dark.js": 404,
+		"./solarized-light": 405,
+		"./solarized-light.js": 405,
+		"./sunburst": 406,
+		"./sunburst.js": 406,
+		"./tomorrow": 410,
+		"./tomorrow-night": 409,
+		"./tomorrow-night-blue": 407,
+		"./tomorrow-night-blue.js": 407,
+		"./tomorrow-night-bright": 408,
+		"./tomorrow-night-bright.js": 408,
+		"./tomorrow-night-eighties": 335,
+		"./tomorrow-night-eighties.js": 335,
+		"./tomorrow-night.js": 409,
+		"./tomorrow.js": 410,
+		"./vs": 411,
+		"./vs.js": 411,
+		"./xcode": 412,
+		"./xcode.js": 412,
+		"./xt256": 413,
+		"./xt256.js": 413,
+		"./zenburn": 414,
+		"./zenburn.js": 414
+>>>>>>> 5368c9a... update demo
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -40321,6 +41072,7 @@
 	        "color": "#be4678"
 	    },
 	    "hljs-selector-id": {
+<<<<<<< HEAD
 	        "color": "#be4678"
 	    },
 	    "hljs-selector-class": {
@@ -40347,6 +41099,34 @@
 	    "hljs-params": {
 	        "color": "#aa573c"
 	    },
+=======
+	        "color": "#be4678"
+	    },
+	    "hljs-selector-class": {
+	        "color": "#be4678"
+	    },
+	    "hljs-number": {
+	        "color": "#aa573c"
+	    },
+	    "hljs-meta": {
+	        "color": "#aa573c"
+	    },
+	    "hljs-built_in": {
+	        "color": "#aa573c"
+	    },
+	    "hljs-builtin-name": {
+	        "color": "#aa573c"
+	    },
+	    "hljs-literal": {
+	        "color": "#aa573c"
+	    },
+	    "hljs-type": {
+	        "color": "#aa573c"
+	    },
+	    "hljs-params": {
+	        "color": "#aa573c"
+	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-string": {
 	        "color": "#2a9292"
 	    },
@@ -40367,6 +41147,7 @@
 	    },
 	    "hljs-selector-tag": {
 	        "color": "#955ae7"
+<<<<<<< HEAD
 	    },
 	    "hljs-deletion": {
 	        "color": "#19171c",
@@ -40380,6 +41161,21 @@
 	        "width": "100%",
 	        "backgroundColor": "#2a9292"
 	    },
+=======
+	    },
+	    "hljs-deletion": {
+	        "color": "#19171c",
+	        "display": "inline-block",
+	        "width": "100%",
+	        "backgroundColor": "#be4678"
+	    },
+	    "hljs-addition": {
+	        "color": "#19171c",
+	        "display": "inline-block",
+	        "width": "100%",
+	        "backgroundColor": "#2a9292"
+	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs": {
 	        "display": "block",
 	        "overflowX": "auto",
@@ -40834,6 +41630,8 @@
 	    },
 	    "hljs-quote": {
 	        "color": "#6c6b5a"
+<<<<<<< HEAD
+=======
 	    },
 	    "hljs-variable": {
 	        "color": "#ba6236"
@@ -40844,6 +41642,43 @@
 	    "hljs-attribute": {
 	        "color": "#ba6236"
 	    },
+	    "hljs-tag": {
+	        "color": "#ba6236"
+	    },
+	    "hljs-name": {
+	        "color": "#ba6236"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-variable": {
+	        "color": "#ba6236"
+	    },
+<<<<<<< HEAD
+	    "hljs-template-variable": {
+	        "color": "#ba6236"
+=======
+	    "hljs-link": {
+	        "color": "#ba6236"
+	    },
+	    "hljs-selector-id": {
+	        "color": "#ba6236"
+	    },
+	    "hljs-selector-class": {
+	        "color": "#ba6236"
+	    },
+	    "hljs-number": {
+	        "color": "#ae7313"
+	    },
+	    "hljs-meta": {
+	        "color": "#ae7313"
+	    },
+	    "hljs-built_in": {
+	        "color": "#ae7313"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-attribute": {
+	        "color": "#ba6236"
+	    },
+<<<<<<< HEAD
 	    "hljs-tag": {
 	        "color": "#ba6236"
 	    },
@@ -40886,6 +41721,20 @@
 	    "hljs-string": {
 	        "color": "#7d9726"
 	    },
+=======
+	    "hljs-literal": {
+	        "color": "#ae7313"
+	    },
+	    "hljs-type": {
+	        "color": "#ae7313"
+	    },
+	    "hljs-params": {
+	        "color": "#ae7313"
+	    },
+	    "hljs-string": {
+	        "color": "#7d9726"
+	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-symbol": {
 	        "color": "#7d9726"
 	    },
@@ -41252,6 +42101,13 @@
 	    },
 	    "hljs-template-variable": {
 	        "color": "#ca402b"
+<<<<<<< HEAD
+	    },
+	    "hljs-attribute": {
+	        "color": "#ca402b"
+	    },
+	    "hljs-tag": {
+=======
 	    },
 	    "hljs-attribute": {
 	        "color": "#ca402b"
@@ -41266,6 +42122,17 @@
 	        "color": "#ca402b"
 	    },
 	    "hljs-link": {
+>>>>>>> 5368c9a... update demo
+	        "color": "#ca402b"
+	    },
+	    "hljs-selector-id": {
+	        "color": "#ca402b"
+	    },
+<<<<<<< HEAD
+	    "hljs-regexp": {
+	        "color": "#ca402b"
+	    },
+	    "hljs-link": {
 	        "color": "#ca402b"
 	    },
 	    "hljs-selector-id": {
@@ -41273,10 +42140,24 @@
 	    },
 	    "hljs-selector-class": {
 	        "color": "#ca402b"
+=======
+	    "hljs-selector-class": {
+	        "color": "#ca402b"
 	    },
 	    "hljs-number": {
 	        "color": "#a65926"
 	    },
+	    "hljs-meta": {
+	        "color": "#a65926"
+	    },
+	    "hljs-built_in": {
+	        "color": "#a65926"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-builtin-name": {
+	        "color": "#a65926"
+	    },
+<<<<<<< HEAD
 	    "hljs-meta": {
 	        "color": "#a65926"
 	    },
@@ -41323,6 +42204,45 @@
 	        "color": "#695d69",
 	        "padding": "0.5em"
 	    },
+=======
+	    "hljs-literal": {
+	        "color": "#a65926"
+	    },
+	    "hljs-type": {
+	        "color": "#a65926"
+	    },
+	    "hljs-params": {
+	        "color": "#a65926"
+	    },
+	    "hljs-string": {
+	        "color": "#918b3b"
+	    },
+	    "hljs-symbol": {
+	        "color": "#918b3b"
+	    },
+	    "hljs-bullet": {
+	        "color": "#918b3b"
+	    },
+	    "hljs-title": {
+	        "color": "#516aec"
+	    },
+	    "hljs-section": {
+	        "color": "#516aec"
+	    },
+	    "hljs-keyword": {
+	        "color": "#7b59c0"
+	    },
+	    "hljs-selector-tag": {
+	        "color": "#7b59c0"
+	    },
+	    "hljs": {
+	        "display": "block",
+	        "overflowX": "auto",
+	        "background": "#f7f3f7",
+	        "color": "#695d69",
+	        "padding": "0.5em"
+	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-emphasis": {
 	        "fontStyle": "italic"
 	    },
@@ -41770,6 +42690,7 @@
 	    },
 	    "hljs-quote": {
 	        "color": "#78877d"
+<<<<<<< HEAD
 	    },
 	    "hljs-variable": {
 	        "color": "#b16139"
@@ -41780,6 +42701,55 @@
 	    "hljs-attribute": {
 	        "color": "#b16139"
 	    },
+	    "hljs-tag": {
+	        "color": "#b16139"
+	    },
+	    "hljs-name": {
+	        "color": "#b16139"
+	    },
+	    "hljs-regexp": {
+	        "color": "#b16139"
+	    },
+	    "hljs-link": {
+	        "color": "#b16139"
+	    },
+	    "hljs-selector-id": {
+	        "color": "#b16139"
+	    },
+	    "hljs-selector-class": {
+	        "color": "#b16139"
+	    },
+	    "hljs-number": {
+	        "color": "#9f713c"
+	    },
+	    "hljs-meta": {
+	        "color": "#9f713c"
+	    },
+	    "hljs-built_in": {
+	        "color": "#9f713c"
+=======
+	    },
+	    "hljs-variable": {
+	        "color": "#b16139"
+	    },
+	    "hljs-template-variable": {
+	        "color": "#b16139"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-attribute": {
+	        "color": "#b16139"
+	    },
+<<<<<<< HEAD
+	    "hljs-literal": {
+	        "color": "#9f713c"
+	    },
+	    "hljs-type": {
+	        "color": "#9f713c"
+	    },
+	    "hljs-params": {
+	        "color": "#9f713c"
+	    },
+=======
 	    "hljs-tag": {
 	        "color": "#b16139"
 	    },
@@ -41819,6 +42789,7 @@
 	    "hljs-params": {
 	        "color": "#9f713c"
 	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-string": {
 	        "color": "#489963"
 	    },
@@ -42300,6 +43271,7 @@
 	    },
 	    "hljs-template-variable": {
 	        "color": "#c94922"
+<<<<<<< HEAD
 	    },
 	    "hljs-attribute": {
 	        "color": "#c94922"
@@ -42314,6 +43286,35 @@
 	        "color": "#c94922"
 	    },
 	    "hljs-link": {
+=======
+	    },
+	    "hljs-attribute": {
+	        "color": "#c94922"
+	    },
+	    "hljs-tag": {
+>>>>>>> 5368c9a... update demo
+	        "color": "#c94922"
+	    },
+	    "hljs-selector-id": {
+	        "color": "#c94922"
+	    },
+<<<<<<< HEAD
+	    "hljs-selector-class": {
+	        "color": "#c94922"
+	    },
+	    "hljs-number": {
+	        "color": "#c76b29"
+	    },
+	    "hljs-meta": {
+	        "color": "#c76b29"
+	    },
+	    "hljs-built_in": {
+	        "color": "#c76b29"
+=======
+	    "hljs-regexp": {
+	        "color": "#c94922"
+	    },
+	    "hljs-link": {
 	        "color": "#c94922"
 	    },
 	    "hljs-selector-id": {
@@ -42321,10 +43322,50 @@
 	    },
 	    "hljs-selector-class": {
 	        "color": "#c94922"
+>>>>>>> 5368c9a... update demo
 	    },
-	    "hljs-number": {
+	    "hljs-builtin-name": {
 	        "color": "#c76b29"
 	    },
+<<<<<<< HEAD
+	    "hljs-literal": {
+	        "color": "#c76b29"
+	    },
+	    "hljs-type": {
+	        "color": "#c76b29"
+	    },
+	    "hljs-params": {
+	        "color": "#c76b29"
+	    },
+	    "hljs-string": {
+	        "color": "#ac9739"
+	    },
+	    "hljs-symbol": {
+	        "color": "#ac9739"
+	    },
+	    "hljs-bullet": {
+	        "color": "#ac9739"
+	    },
+	    "hljs-title": {
+	        "color": "#3d8fd1"
+	    },
+	    "hljs-section": {
+	        "color": "#3d8fd1"
+	    },
+	    "hljs-keyword": {
+	        "color": "#6679cc"
+	    },
+	    "hljs-selector-tag": {
+	        "color": "#6679cc"
+	    },
+	    "hljs": {
+	        "display": "block",
+	        "overflowX": "auto",
+	        "background": "#f5f7ff",
+	        "color": "#5e6687",
+	        "padding": "0.5em"
+	    },
+=======
 	    "hljs-meta": {
 	        "color": "#c76b29"
 	    },
@@ -42371,6 +43412,7 @@
 	        "color": "#5e6687",
 	        "padding": "0.5em"
 	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-emphasis": {
 	        "fontStyle": "italic"
 	    },
@@ -42806,6 +43848,7 @@
 	        "color": "#9b869b"
 	    },
 	    "hljs-selector-class": {
+<<<<<<< HEAD
 	        "color": "#9b869b"
 	    },
 	    "hljs-type": {
@@ -42814,6 +43857,16 @@
 	    "hljs-attribute": {
 	        "color": "#9b869b"
 	    },
+=======
+	        "color": "#9b869b"
+	    },
+	    "hljs-type": {
+	        "color": "#9b869b"
+	    },
+	    "hljs-attribute": {
+	        "color": "#9b869b"
+	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-string": {
 	        "color": "#8f9c6c"
 	    },
@@ -42900,6 +43953,7 @@
 	        "color": "#88f"
 	    },
 	    "hljs-keyword": {
+<<<<<<< HEAD
 	        "color": "#3182bd"
 	    },
 	    "hljs-selector-tag": {
@@ -42917,6 +43971,25 @@
 	    "hljs-doctag": {
 	        "color": "#3182bd"
 	    },
+=======
+	        "color": "#3182bd"
+	    },
+	    "hljs-selector-tag": {
+	        "color": "#3182bd"
+	    },
+	    "hljs-title": {
+	        "color": "#3182bd"
+	    },
+	    "hljs-section": {
+	        "color": "#3182bd"
+	    },
+	    "hljs-built_in": {
+	        "color": "#3182bd"
+	    },
+	    "hljs-doctag": {
+	        "color": "#3182bd"
+	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-type": {
 	        "color": "#3182bd"
 	    },
@@ -43529,7 +44602,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 470 */
+=======
+/* 373 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -43630,7 +44707,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 471 */
+=======
+/* 374 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -43660,6 +44741,7 @@
 	    },
 	    "hljs-bullet": {
 	        "color": "#ff0"
+<<<<<<< HEAD
 	    },
 	    "hljs-built_in": {
 	        "color": "#ff0"
@@ -43671,8 +44753,38 @@
 	        "color": "#ff0"
 	    },
 	    "hljs-template-variable": {
+=======
+	    },
+	    "hljs-built_in": {
 	        "color": "#ff0"
 	    },
+	    "hljs-builtin-name": {
+	        "color": "#ff0"
+	    },
+	    "hljs-template-tag": {
+>>>>>>> 5368c9a... update demo
+	        "color": "#ff0"
+	    },
+	    "hljs-template-variable": {
+	        "color": "#ff0"
+	    },
+<<<<<<< HEAD
+	    "hljs-keyword": {
+	        "color": "#fff",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-selector-tag": {
+	        "color": "#fff",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-section": {
+	        "color": "#fff",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-type": {
+	        "color": "#fff"
+	    },
+=======
 	    "hljs-addition": {
 	        "color": "#ff0"
 	    },
@@ -43691,6 +44803,7 @@
 	    "hljs-type": {
 	        "color": "#fff"
 	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-name": {
 	        "color": "#fff",
 	        "fontWeight": "bold"
@@ -43743,7 +44856,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 472 */
+=======
+/* 375 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -43851,7 +44968,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 473 */
+=======
+/* 376 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -43977,7 +45098,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 474 */
+=======
+/* 377 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44079,7 +45204,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 475 */
+=======
+/* 378 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44202,7 +45331,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 476 */
+=======
+/* 379 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44221,6 +45354,7 @@
 	    "hljs-comment": {
 	        "color": "#777",
 	        "fontStyle": "italic"
+<<<<<<< HEAD
 	    },
 	    "hljs-quote": {
 	        "color": "#777",
@@ -44253,6 +45387,14 @@
 	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAJ0lEQVQIW2O8e/fufwYGBgZBQUEQxcCIIfDu3Tuwivfv30NUoAsAALHpFMMLqZlPAAAAAElFTkSuQmCC) repeat"
 	    },
 	    "hljs-formula": {
+=======
+	    },
+	    "hljs-quote": {
+	        "color": "#777",
+	        "fontStyle": "italic"
+	    },
+	    "hljs-keyword": {
+>>>>>>> 5368c9a... update demo
 	        "color": "#333",
 	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAJ0lEQVQIW2O8e/fufwYGBgZBQUEQxcCIIfDu3Tuwivfv30NUoAsAALHpFMMLqZlPAAAAAElFTkSuQmCC) repeat"
 	    },
@@ -44260,10 +45402,92 @@
 	        "color": "#000",
 	        "fontWeight": "bold"
 	    },
+	    "hljs-selector-tag": {
+	        "color": "#333",
+	        "fontWeight": "bold"
+	    },
+<<<<<<< HEAD
+	    "hljs-selector-id": {
+	        "color": "#000",
+	        "fontWeight": "bold"
+=======
+	    "hljs-subst": {
+	        "color": "#333",
+	        "fontWeight": "normal"
+	    },
+	    "hljs-number": {
+	        "color": "#777"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-literal": {
+	        "color": "#777"
+	    },
+<<<<<<< HEAD
+	    "hljs-type": {
+=======
+	    "hljs-string": {
+>>>>>>> 5368c9a... update demo
+	        "color": "#333",
+	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAJ0lEQVQIW2O8e/fufwYGBgZBQUEQxcCIIfDu3Tuwivfv30NUoAsAALHpFMMLqZlPAAAAAElFTkSuQmCC) repeat"
+	    },
+<<<<<<< HEAD
+	    "hljs-name": {
+	        "color": "#333",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-tag": {
+	        "color": "#333"
+=======
+	    "hljs-doctag": {
+	        "color": "#333",
+	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAJ0lEQVQIW2O8e/fufwYGBgZBQUEQxcCIIfDu3Tuwivfv30NUoAsAALHpFMMLqZlPAAAAAElFTkSuQmCC) repeat"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-regexp": {
+	        "color": "#333",
+<<<<<<< HEAD
+	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAICAYAAADA+m62AAAAPUlEQVQYV2NkQAN37979r6yszIgujiIAU4RNMVwhuiQ6H6wQl3XI4oy4FMHcCJPHcDS6J2A2EqUQpJhohQDexSef15DBCwAAAABJRU5ErkJggg==) repeat"
+=======
+	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAJ0lEQVQIW2O8e/fufwYGBgZBQUEQxcCIIfDu3Tuwivfv30NUoAsAALHpFMMLqZlPAAAAAElFTkSuQmCC) repeat"
+	    },
+	    "hljs-title": {
+	        "color": "#000",
+	        "fontWeight": "bold"
+>>>>>>> 5368c9a... update demo
+	    },
 	    "hljs-section": {
 	        "color": "#000",
 	        "fontWeight": "bold"
 	    },
+<<<<<<< HEAD
+	    "hljs-bullet": {
+	        "color": "#000",
+	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAKElEQVQIW2NkQAO7d+/+z4gsBhJwdXVlhAvCBECKwIIwAbhKZBUwBQA6hBpm5efZsgAAAABJRU5ErkJggg==) repeat"
+	    },
+	    "hljs-link": {
+	        "color": "#000",
+	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAKElEQVQIW2NkQAO7d+/+z4gsBhJwdXVlhAvCBECKwIIwAbhKZBUwBQA6hBpm5efZsgAAAABJRU5ErkJggg==) repeat"
+	    },
+	    "hljs-built_in": {
+	        "color": "#000",
+	        "textDecoration": "underline"
+	    },
+	    "hljs-builtin-name": {
+	        "color": "#000",
+	        "textDecoration": "underline"
+	    },
+	    "hljs-meta": {
+	        "color": "#999",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-deletion": {
+	        "color": "#fff",
+	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAYAAABS3WWCAAAAE0lEQVQIW2MMDQ39zzhz5kwIAQAyxweWgUHd1AAAAABJRU5ErkJggg==) repeat"
+	    },
+	    "hljs-addition": {
+	        "color": "#000",
+	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAALUlEQVQYV2N89+7dfwYk8P79ewZBQUFkIQZGOiu6e/cuiptQHAPl0NtNxAQBAM97Oejj3Dg7AAAAAElFTkSuQmCC) repeat"
+=======
 	    "hljs-selector-id": {
 	        "color": "#000",
 	        "fontWeight": "bold"
@@ -44294,10 +45518,10 @@
 	    "hljs-bullet": {
 	        "color": "#000",
 	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAKElEQVQIW2NkQAO7d+/+z4gsBhJwdXVlhAvCBECKwIIwAbhKZBUwBQA6hBpm5efZsgAAAABJRU5ErkJggg==) repeat"
+>>>>>>> 5368c9a... update demo
 	    },
-	    "hljs-link": {
-	        "color": "#000",
-	        "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAKElEQVQIW2NkQAO7d+/+z4gsBhJwdXVlhAvCBECKwIIwAbhKZBUwBQA6hBpm5efZsgAAAABJRU5ErkJggg==) repeat"
+	    "hljs-emphasis": {
+	        "fontStyle": "italic"
 	    },
 	    "hljs-built_in": {
 	        "color": "#000",
@@ -44328,7 +45552,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 477 */
+=======
+/* 380 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44481,7 +45709,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 478 */
+=======
+/* 381 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44634,7 +45866,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 479 */
+=======
+/* 382 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44729,6 +45965,7 @@
 	    },
 	    "hljs-selector-tag": {
 	        "color": "#c85e7c"
+<<<<<<< HEAD
 	    },
 	    "hljs": {
 	        "display": "block",
@@ -44736,6 +45973,15 @@
 	        "color": "#b9b5b8",
 	        "padding": "0.5em"
 	    },
+=======
+	    },
+	    "hljs": {
+	        "display": "block",
+	        "background": "#322931",
+	        "color": "#b9b5b8",
+	        "padding": "0.5em"
+	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-emphasis": {
 	        "fontStyle": "italic"
 	    },
@@ -44745,7 +45991,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 480 */
+=======
+/* 383 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44881,7 +46131,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 481 */
+=======
+/* 384 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -45010,7 +46264,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 482 */
+=======
+/* 385 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45325,7 +46583,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _docco = __webpack_require__(469);
+=======
+	var _docco = __webpack_require__(372);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'docco', {
 	  enumerable: true,
@@ -45334,7 +46596,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _dracula = __webpack_require__(470);
+=======
+	var _dracula = __webpack_require__(373);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'dracula', {
 	  enumerable: true,
@@ -45343,7 +46609,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _far = __webpack_require__(471);
+=======
+	var _far = __webpack_require__(374);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'far', {
 	  enumerable: true,
@@ -45352,7 +46622,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _foundation = __webpack_require__(472);
+=======
+	var _foundation = __webpack_require__(375);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'foundation', {
 	  enumerable: true,
@@ -45361,7 +46635,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _githubGist = __webpack_require__(474);
+=======
+	var _githubGist = __webpack_require__(377);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'githubGist', {
 	  enumerable: true,
@@ -45370,7 +46648,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _github = __webpack_require__(473);
+=======
+	var _github = __webpack_require__(376);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'github', {
 	  enumerable: true,
@@ -45379,7 +46661,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _googlecode = __webpack_require__(475);
+=======
+	var _googlecode = __webpack_require__(378);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'googlecode', {
 	  enumerable: true,
@@ -45388,7 +46674,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _grayscale = __webpack_require__(476);
+=======
+	var _grayscale = __webpack_require__(379);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'grayscale', {
 	  enumerable: true,
@@ -45397,7 +46687,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _gruvboxDark = __webpack_require__(477);
+=======
+	var _gruvboxDark = __webpack_require__(380);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'gruvboxDark', {
 	  enumerable: true,
@@ -45406,7 +46700,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _gruvboxLight = __webpack_require__(478);
+=======
+	var _gruvboxLight = __webpack_require__(381);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'gruvboxLight', {
 	  enumerable: true,
@@ -45415,7 +46713,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _hopscotch = __webpack_require__(479);
+=======
+	var _hopscotch = __webpack_require__(382);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'hopscotch', {
 	  enumerable: true,
@@ -45424,7 +46726,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _hybrid = __webpack_require__(480);
+=======
+	var _hybrid = __webpack_require__(383);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'hybrid', {
 	  enumerable: true,
@@ -45433,7 +46739,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _idea = __webpack_require__(481);
+=======
+	var _idea = __webpack_require__(384);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'idea', {
 	  enumerable: true,
@@ -45442,7 +46752,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _irBlack = __webpack_require__(483);
+=======
+	var _irBlack = __webpack_require__(386);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'irBlack', {
 	  enumerable: true,
@@ -45451,7 +46765,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _kimbie = __webpack_require__(484);
+=======
+	var _kimbie = __webpack_require__(387);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'kimbieDark', {
 	  enumerable: true,
@@ -45460,7 +46778,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _kimbie2 = __webpack_require__(485);
+=======
+	var _kimbie2 = __webpack_require__(388);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'kimbieLight', {
 	  enumerable: true,
@@ -45469,7 +46791,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _magula = __webpack_require__(486);
+=======
+	var _magula = __webpack_require__(389);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'magula', {
 	  enumerable: true,
@@ -45478,7 +46804,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _monoBlue = __webpack_require__(487);
+=======
+	var _monoBlue = __webpack_require__(390);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'monoBlue', {
 	  enumerable: true,
@@ -45487,7 +46817,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _monokaiSublime = __webpack_require__(488);
+=======
+	var _monokaiSublime = __webpack_require__(391);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'monokaiSublime', {
 	  enumerable: true,
@@ -45496,7 +46830,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _monokai = __webpack_require__(489);
+=======
+	var _monokai = __webpack_require__(392);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'monokai', {
 	  enumerable: true,
@@ -45505,7 +46843,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _obsidian = __webpack_require__(490);
+=======
+	var _obsidian = __webpack_require__(393);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'obsidian', {
 	  enumerable: true,
@@ -45514,7 +46856,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _ocean = __webpack_require__(491);
+=======
+	var _ocean = __webpack_require__(394);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'ocean', {
 	  enumerable: true,
@@ -45523,7 +46869,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _paraisoDark = __webpack_require__(492);
+=======
+	var _paraisoDark = __webpack_require__(395);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'paraisoDark', {
 	  enumerable: true,
@@ -45532,7 +46882,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _paraisoLight = __webpack_require__(493);
+=======
+	var _paraisoLight = __webpack_require__(396);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'paraisoLight', {
 	  enumerable: true,
@@ -45541,7 +46895,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _pojoaque = __webpack_require__(494);
+=======
+	var _pojoaque = __webpack_require__(397);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'pojoaque', {
 	  enumerable: true,
@@ -45550,7 +46908,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _purebasic = __webpack_require__(495);
+=======
+	var _purebasic = __webpack_require__(398);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'purebasic', {
 	  enumerable: true,
@@ -45559,7 +46921,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _qtcreator_dark = __webpack_require__(496);
+=======
+	var _qtcreator_dark = __webpack_require__(399);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'qtcreatorDark', {
 	  enumerable: true,
@@ -45568,7 +46934,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _qtcreator_light = __webpack_require__(497);
+=======
+	var _qtcreator_light = __webpack_require__(400);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'qtcreatorLight', {
 	  enumerable: true,
@@ -45577,7 +46947,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _railscasts = __webpack_require__(498);
+=======
+	var _railscasts = __webpack_require__(401);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'railscasts', {
 	  enumerable: true,
@@ -45586,7 +46960,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _rainbow = __webpack_require__(499);
+=======
+	var _rainbow = __webpack_require__(402);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'rainbow', {
 	  enumerable: true,
@@ -45595,7 +46973,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _schoolBook = __webpack_require__(500);
+=======
+	var _schoolBook = __webpack_require__(403);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'schoolBook', {
 	  enumerable: true,
@@ -45604,7 +46986,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _solarizedDark = __webpack_require__(501);
+=======
+	var _solarizedDark = __webpack_require__(404);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'solarizedDark', {
 	  enumerable: true,
@@ -45613,7 +46999,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _solarizedLight = __webpack_require__(502);
+=======
+	var _solarizedLight = __webpack_require__(405);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'solarizedLight', {
 	  enumerable: true,
@@ -45622,7 +47012,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _sunburst = __webpack_require__(503);
+=======
+	var _sunburst = __webpack_require__(406);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'sunburst', {
 	  enumerable: true,
@@ -45631,7 +47025,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _tomorrowNightBlue = __webpack_require__(504);
+=======
+	var _tomorrowNightBlue = __webpack_require__(407);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'tomorrowNightBlue', {
 	  enumerable: true,
@@ -45640,7 +47038,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _tomorrowNightBright = __webpack_require__(505);
+=======
+	var _tomorrowNightBright = __webpack_require__(408);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'tomorrowNightBright', {
 	  enumerable: true,
@@ -45649,7 +47051,11 @@
 	  }
 	});
 	
+<<<<<<< HEAD
 	var _tomorrowNightEighties = __webpack_require__(432);
+=======
+	var _tomorrowNightEighties = __webpack_require__(335);
+>>>>>>> 5368c9a... update demo
 	
 	Object.defineProperty(exports, 'tomorrowNightEighties', {
 	  enumerable: true,
@@ -45715,7 +47121,11 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ },
+<<<<<<< HEAD
 /* 483 */
+=======
+/* 386 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -45821,7 +47231,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 484 */
+=======
+/* 387 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -45930,7 +47344,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 485 */
+=======
+/* 388 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -45944,6 +47362,7 @@
 	    },
 	    "hljs-quote": {
 	        "color": "#a57a4c"
+<<<<<<< HEAD
 	    },
 	    "hljs-variable": {
 	        "color": "#dc3958"
@@ -45962,13 +47381,71 @@
 	    },
 	    "hljs-selector-class": {
 	        "color": "#dc3958"
+=======
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-variable": {
+	        "color": "#dc3958"
+	    },
+	    "hljs-template-variable": {
+	        "color": "#dc3958"
+	    },
+<<<<<<< HEAD
+	    "hljs-number": {
+	        "color": "#f79a32"
+	    },
+	    "hljs-built_in": {
+	        "color": "#f79a32"
+=======
+	    "hljs-tag": {
+	        "color": "#dc3958"
+	    },
+	    "hljs-name": {
+	        "color": "#dc3958"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-selector-id": {
+	        "color": "#dc3958"
+	    },
+<<<<<<< HEAD
+	    "hljs-literal": {
+	        "color": "#f79a32"
+	    },
+	    "hljs-type": {
+	        "color": "#f79a32"
+	    },
+	    "hljs-params": {
+	        "color": "#f79a32"
+=======
+	    "hljs-selector-class": {
+	        "color": "#dc3958"
 	    },
 	    "hljs-regexp": {
 	        "color": "#dc3958"
+>>>>>>> 5368c9a... update demo
 	    },
 	    "hljs-meta": {
 	        "color": "#dc3958"
 	    },
+<<<<<<< HEAD
+	    "hljs-link": {
+	        "color": "#f79a32"
+	    },
+	    "hljs-title": {
+	        "color": "#f06431"
+	    },
+	    "hljs-section": {
+	        "color": "#f06431"
+	    },
+	    "hljs-attribute": {
+	        "color": "#f06431"
+	    },
+	    "hljs-string": {
+	        "color": "#889b4a"
+	    },
+	    "hljs-symbol": {
+	        "color": "#889b4a"
+=======
 	    "hljs-number": {
 	        "color": "#f79a32"
 	    },
@@ -45998,16 +47475,23 @@
 	    },
 	    "hljs-section": {
 	        "color": "#f06431"
+>>>>>>> 5368c9a... update demo
 	    },
-	    "hljs-attribute": {
-	        "color": "#f06431"
+	    "hljs-bullet": {
+	        "color": "#889b4a"
 	    },
+<<<<<<< HEAD
+	    "hljs-addition": {
+=======
 	    "hljs-string": {
+>>>>>>> 5368c9a... update demo
 	        "color": "#889b4a"
 	    },
 	    "hljs-symbol": {
 	        "color": "#889b4a"
 	    },
+<<<<<<< HEAD
+=======
 	    "hljs-bullet": {
 	        "color": "#889b4a"
 	    },
@@ -46017,6 +47501,7 @@
 	    "hljs-keyword": {
 	        "color": "#98676a"
 	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-selector-tag": {
 	        "color": "#98676a"
 	    },
@@ -46039,7 +47524,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 486 */
+=======
+/* 389 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46150,7 +47639,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 487 */
+=======
+/* 390 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46256,7 +47749,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 488 */
+=======
+/* 391 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46382,7 +47879,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 489 */
+=======
+/* 392 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46400,6 +47901,77 @@
 	    },
 	    "hljs-tag": {
 	        "color": "#f92672"
+<<<<<<< HEAD
+	    },
+	    "hljs-keyword": {
+	        "color": "#f92672",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-selector-tag": {
+	        "color": "#f92672",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-literal": {
+	        "color": "#f92672",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-strong": {
+	        "color": "#f92672"
+	    },
+	    "hljs-name": {
+	        "color": "#f92672"
+	    },
+	    "hljs-code": {
+	        "color": "#66d9ef"
+	    },
+	    "hljs-class .hljs-title": {
+	        "color": "white"
+	    },
+	    "hljs-attribute": {
+	        "color": "#bf79db"
+	    },
+	    "hljs-symbol": {
+	        "color": "#bf79db"
+	    },
+	    "hljs-regexp": {
+	        "color": "#bf79db"
+	    },
+	    "hljs-link": {
+	        "color": "#bf79db"
+	    },
+	    "hljs-string": {
+	        "color": "#a6e22e"
+	    },
+	    "hljs-bullet": {
+	        "color": "#a6e22e"
+	    },
+	    "hljs-subst": {
+	        "color": "#a6e22e"
+	    },
+	    "hljs-title": {
+	        "color": "#a6e22e",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-section": {
+	        "color": "#a6e22e",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-emphasis": {
+	        "color": "#a6e22e"
+	    },
+	    "hljs-type": {
+	        "color": "#a6e22e",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-built_in": {
+	        "color": "#a6e22e"
+	    },
+	    "hljs-builtin-name": {
+	        "color": "#a6e22e"
+	    },
+	    "hljs-selector-attr": {
+	        "color": "#a6e22e"
+=======
 	    },
 	    "hljs-keyword": {
 	        "color": "#f92672",
@@ -46493,15 +48065,89 @@
 	    },
 	    "hljs-deletion": {
 	        "color": "#75715e"
+>>>>>>> 5368c9a... update demo
 	    },
 	    "hljs-meta": {
 	        "color": "#75715e"
 	    },
+<<<<<<< HEAD
+	    "hljs-addition": {
+	        "color": "#a6e22e"
+	    },
+	    "hljs-variable": {
+	        "color": "#a6e22e"
+	    },
+	    "hljs-template-tag": {
+	        "color": "#a6e22e"
+	    },
+	    "hljs-template-variable": {
+	        "color": "#a6e22e"
+=======
 	    "hljs-doctag": {
 	        "fontWeight": "bold"
 	    },
 	    "hljs-selector-id": {
 	        "fontWeight": "bold"
+	    }
+	};
+
+/***/ },
+/* 393 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = {
+	    "hljs": {
+	        "display": "block",
+	        "overflowX": "auto",
+	        "padding": "0.5em",
+	        "background": "#282b2e",
+	        "color": "#e0e2e4"
+	    },
+	    "hljs-keyword": {
+	        "color": "#93c763",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-selector-tag": {
+	        "color": "#93c763",
+	        "fontWeight": "bold"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-literal": {
+	        "color": "#93c763",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-selector-id": {
+	        "color": "#93c763"
+	    },
+<<<<<<< HEAD
+	    "hljs-deletion": {
+	        "color": "#75715e"
+	    },
+	    "hljs-meta": {
+	        "color": "#75715e"
+=======
+	    "hljs-number": {
+	        "color": "#ffcd22"
+	    },
+	    "hljs-attribute": {
+	        "color": "#668bb0"
+	    },
+	    "hljs-code": {
+	        "color": "white"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-class .hljs-title": {
+	        "color": "white"
+	    },
+	    "hljs-section": {
+	        "color": "white",
+	        "fontWeight": "bold"
+<<<<<<< HEAD
 	    }
 	};
 
@@ -46529,11 +48175,14 @@
 	    "hljs-selector-tag": {
 	        "color": "#93c763",
 	        "fontWeight": "bold"
+=======
+>>>>>>> 5368c9a... update demo
 	    },
 	    "hljs-literal": {
 	        "color": "#93c763",
 	        "fontWeight": "bold"
 	    },
+<<<<<<< HEAD
 	    "hljs-selector-id": {
 	        "color": "#93c763"
 	    },
@@ -46555,7 +48204,7 @@
 	    },
 	    "hljs-regexp": {
 	        "color": "#d39745"
-	    },
+=======
 	    "hljs-link": {
 	        "color": "#d39745"
 	    },
@@ -46571,7 +48220,32 @@
 	    },
 	    "hljs-bullet": {
 	        "color": "#8cbbad"
+>>>>>>> 5368c9a... update demo
 	    },
+	    "hljs-link": {
+	        "color": "#d39745"
+	    },
+<<<<<<< HEAD
+	    "hljs-meta": {
+	        "color": "#557182"
+	    },
+	    "hljs-tag": {
+	        "color": "#8cbbad"
+	    },
+	    "hljs-name": {
+=======
+	    "hljs-emphasis": {
+	        "color": "#8cbbad"
+	    },
+	    "hljs-type": {
+>>>>>>> 5368c9a... update demo
+	        "color": "#8cbbad",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-built_in": {
+	        "color": "#8cbbad"
+	    },
+<<<<<<< HEAD
 	    "hljs-subst": {
 	        "color": "#8cbbad"
 	    },
@@ -46586,11 +48260,24 @@
 	        "color": "#8cbbad"
 	    },
 	    "hljs-selector-attr": {
+=======
+	    "hljs-selector-attr": {
 	        "color": "#8cbbad"
 	    },
 	    "hljs-selector-pseudo": {
 	        "color": "#8cbbad"
 	    },
+	    "hljs-addition": {
+	        "color": "#8cbbad"
+	    },
+	    "hljs-variable": {
+>>>>>>> 5368c9a... update demo
+	        "color": "#8cbbad"
+	    },
+	    "hljs-template-tag": {
+	        "color": "#8cbbad"
+	    },
+<<<<<<< HEAD
 	    "hljs-addition": {
 	        "color": "#8cbbad"
 	    },
@@ -46606,6 +48293,14 @@
 	    "hljs-string": {
 	        "color": "#ec7600"
 	    },
+=======
+	    "hljs-template-variable": {
+	        "color": "#8cbbad"
+	    },
+	    "hljs-string": {
+	        "color": "#ec7600"
+	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-symbol": {
 	        "color": "#ec7600"
 	    },
@@ -46633,7 +48328,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 491 */
+=======
+/* 394 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46739,7 +48438,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 492 */
+=======
+/* 395 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46845,7 +48548,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 493 */
+=======
+/* 396 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46951,7 +48658,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 494 */
+=======
+/* 397 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47065,7 +48776,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 495 */
+=======
+/* 398 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47193,7 +48908,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 496 */
+=======
+/* 399 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47322,7 +49041,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 497 */
+=======
+/* 400 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47451,7 +49174,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 498 */
+=======
+/* 401 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47569,7 +49296,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 499 */
+=======
+/* 402 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47584,6 +49315,41 @@
 	        "padding": "0.5em",
 	        "background": "#474949",
 	        "color": "#d1d9e1"
+<<<<<<< HEAD
+=======
+	    },
+	    "hljs-comment": {
+	        "color": "#969896",
+	        "fontStyle": "italic"
+	    },
+	    "hljs-quote": {
+	        "color": "#969896",
+	        "fontStyle": "italic"
+	    },
+	    "hljs-keyword": {
+	        "color": "#cc99cc"
+	    },
+	    "hljs-selector-tag": {
+	        "color": "#cc99cc"
+	    },
+	    "hljs-literal": {
+	        "color": "#cc99cc"
+	    },
+	    "hljs-type": {
+	        "color": "#cc99cc"
+	    },
+	    "hljs-addition": {
+	        "color": "#cc99cc"
+	    },
+	    "hljs-number": {
+	        "color": "#f99157"
+	    },
+	    "hljs-selector-attr": {
+	        "color": "#f99157"
+	    },
+	    "hljs-selector-pseudo": {
+	        "color": "#f99157"
+>>>>>>> 5368c9a... update demo
 	    },
 	    "hljs-comment": {
 	        "color": "#969896",
@@ -47688,7 +49454,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 500 */
+=======
+/* 403 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47800,7 +49570,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 501 */
+=======
+/* 404 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47924,7 +49698,11 @@
 	};
 
 /***/ },
+<<<<<<< HEAD
 /* 502 */
+=======
+/* 405 */
+>>>>>>> 5368c9a... update demo
 /***/ function(module, exports) {
 
 	"use strict";
@@ -48492,6 +50270,7 @@
 	exports.default = {
 	    "hljs-comment": {
 	        "color": "#8e908c"
+<<<<<<< HEAD
 	    },
 	    "hljs-quote": {
 	        "color": "#8e908c"
@@ -48513,10 +50292,16 @@
 	    },
 	    "hljs-selector-class": {
 	        "color": "#c82829"
+=======
 	    },
-	    "hljs-regexp": {
+	    "hljs-quote": {
+	        "color": "#8e908c"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-variable": {
 	        "color": "#c82829"
 	    },
+<<<<<<< HEAD
 	    "hljs-deletion": {
 	        "color": "#c82829"
 	    },
@@ -48525,10 +50310,21 @@
 	    },
 	    "hljs-built_in": {
 	        "color": "#f5871f"
+=======
+	    "hljs-template-variable": {
+	        "color": "#c82829"
 	    },
-	    "hljs-builtin-name": {
-	        "color": "#f5871f"
+	    "hljs-tag": {
+	        "color": "#c82829"
 	    },
+	    "hljs-name": {
+	        "color": "#c82829"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-selector-id": {
+	        "color": "#c82829"
+	    },
+<<<<<<< HEAD
 	    "hljs-literal": {
 	        "color": "#f5871f"
 	    },
@@ -48537,10 +50333,18 @@
 	    },
 	    "hljs-params": {
 	        "color": "#f5871f"
+=======
+	    "hljs-selector-class": {
+	        "color": "#c82829"
+	    },
+	    "hljs-regexp": {
+	        "color": "#c82829"
+>>>>>>> 5368c9a... update demo
 	    },
 	    "hljs-meta": {
 	        "color": "#f5871f"
 	    },
+<<<<<<< HEAD
 	    "hljs-link": {
 	        "color": "#f5871f"
 	    },
@@ -48552,7 +50356,63 @@
 	    },
 	    "hljs-symbol": {
 	        "color": "#718c00"
+=======
+	    "hljs-number": {
+	        "color": "#f5871f"
 	    },
+	    "hljs-built_in": {
+	        "color": "#f5871f"
+	    },
+	    "hljs-builtin-name": {
+	        "color": "#f5871f"
+	    },
+	    "hljs-literal": {
+	        "color": "#f5871f"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-type": {
+	        "color": "#f5871f"
+	    },
+<<<<<<< HEAD
+	    "hljs-addition": {
+	        "color": "#718c00"
+=======
+	    "hljs-params": {
+	        "color": "#f5871f"
+	    },
+	    "hljs-meta": {
+	        "color": "#f5871f"
+	    },
+	    "hljs-link": {
+	        "color": "#f5871f"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-title": {
+	        "color": "#4271ae"
+	    },
+<<<<<<< HEAD
+	    "hljs-section": {
+	        "color": "#4271ae"
+=======
+	    "hljs-string": {
+	        "color": "#718c00"
+>>>>>>> 5368c9a... update demo
+	    },
+	    "hljs-symbol": {
+	        "color": "#718c00"
+	    },
+<<<<<<< HEAD
+	    "hljs-selector-tag": {
+	        "color": "#8959a8"
+	    },
+	    "hljs": {
+	        "display": "block",
+	        "overflowX": "auto",
+	        "background": "white",
+	        "color": "#4d4d4c",
+	        "padding": "0.5em"
+	    },
+=======
 	    "hljs-bullet": {
 	        "color": "#718c00"
 	    },
@@ -48578,6 +50438,7 @@
 	        "color": "#4d4d4c",
 	        "padding": "0.5em"
 	    },
+>>>>>>> 5368c9a... update demo
 	    "hljs-emphasis": {
 	        "fontStyle": "italic"
 	    },
