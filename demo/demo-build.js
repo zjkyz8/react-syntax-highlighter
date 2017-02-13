@@ -91,7 +91,7 @@
 	    var initialCodeString = 'function createStyleObject(classNames, style) {\n  return classNames.reduce((styleObject, className) => {\n    return {...styleObject, ...style[className]};\n  }, {});\n}\n\nfunction createClassNameString(classNames) {\n  return classNames.join(\' \');\n}\n\nfunction createChildren(style, useInlineStyles) {\n  let childrenCount = 0;\n  return children => {\n    childrenCount += 1;\n    return children.map((child, i) => createElement({\n      node: child,\n      style,\n      useInlineStyles,\n      key:`code-segment-${childrenCount}-${i}`\n    }));\n  }\n}\n\nfunction createElement({ node, style, useInlineStyles, key }) {\n  const { properties, type, tagName, value } = node;\n  if (type === "text") {\n    return value;\n  } else if (tagName) {\n    const TagName = tagName;\n    const childrenCreator = createChildren(style, useInlineStyles);\n    const props = (\n      useInlineStyles\n      ?\n      { style: createStyleObject(properties.className, style) }\n      :\n      { className: createClassNameString(properties.className) }\n    );\n    const children = childrenCreator(node.children);\n    return <TagName key={key} {...props}>{children}</TagName>;\n  }\n}\n  ';
 	    _this.state = {
 	      selected: 'tomorrow-night-eighties',
-	      style: __webpack_require__(432).default,
+	      style: __webpack_require__(505).default,
 	      code: initialCodeString,
 	      showLineNumbers: false
 	    };
@@ -21905,41 +21905,17 @@
 	        startingLineNumber = _props$startingLineNu === undefined ? 1 : _props$startingLineNu,
 	        lineNumberContainerStyle = props.lineNumberContainerStyle,
 	        lineNumberStyle = props.lineNumberStyle,
-	        rest = (0, _objectWithoutProperties3.default)(props, ['language', 'children', 'style', 'customStyle', 'codeTagProps', 'useInlineStyles', 'showLineNumbers', 'startingLineNumber', 'lineNumberContainerStyle', 'lineNumberStyle']);
+	        _props$wrapLines = props.wrapLines,
+	        wrapLines = _props$wrapLines === undefined ? false : _props$wrapLines,
+	        _props$lineStyle = props.lineStyle,
+	        lineStyle = _props$lineStyle === undefined ? {} : _props$lineStyle,
+	        rest = (0, _objectWithoutProperties3.default)(props, ['language', 'children', 'style', 'customStyle', 'codeTagProps', 'useInlineStyles', 'showLineNumbers', 'startingLineNumber', 'lineNumberContainerStyle', 'lineNumberStyle', 'wrapLines', 'lineStyle']);
 	
 	    var codeTree = language ? lowlight.highlight(language, children) : lowlight.highlightAuto(children);
 	    var defaultPreStyle = style.hljs || { backgroundColor: '#fff' };
 	    var preProps = useInlineStyles ? (0, _assign2.default)({}, rest, { style: (0, _assign2.default)({}, defaultPreStyle, customStyle) }) : (0, _assign2.default)({}, rest, { className: 'hljs' });
 	
-	    var _codeTree$value$reduc = codeTree.value.reduce(function (_ref4, node, index) {
-	      var newTree = _ref4.newTree,
-	          lastLineBreakIndex = _ref4.lastLineBreakIndex;
-	
-	      var shouldSlice = false;
-	      if (node.type === 'text' && hasNewLine(node.value)) {
-	        shouldSlice = true;
-	      } else if (node.children) {
-	        for (var i = 0; i < node.children.length; i++) {
-	          if (node.children[i].type === 'text' && hasNewLine(node.children[i].value)) {
-	            shouldSlice = true;
-	            break;
-	          }
-	        }
-	      }
-	      if (shouldSlice) {
-	        console.log(node);
-	        newTree.push({
-	          type: 'element',
-	          tagName: 'span',
-	          properties: { className: [] },
-	          children: codeTree.value.slice(lastLineBreakIndex + 1, index + 1)
-	        });
-	        lastLineBreakIndex = index;
-	      }
-	      return { newTree: newTree, lastLineBreakIndex: lastLineBreakIndex };
-	    }, { newTree: [], lastLineBreakIndex: -1 }),
-	        newTree = _codeTree$value$reduc.newTree;
-	
+	    var tree = wrapLines ? wrapLinesInSpan(codeTree, lineStyle) : codeTree.value;
 	    var lineNumbers = showLineNumbers ? _react2.default.createElement(LineNumbers, {
 	      containerStyle: lineNumberContainerStyle,
 	      numberStyle: lineNumberStyle,
@@ -21953,7 +21929,7 @@
 	      _react2.default.createElement(
 	        'code',
 	        codeTagProps,
-	        newTree.map(function (node, i) {
+	        tree.map(function (node, i) {
 	          return createElement({
 	            node: node,
 	            style: style,
@@ -21973,14 +21949,17 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var newLineRegex = /\n/g;
-	function hasNewLine(str) {
+	function getNewLines(str) {
 	  return str.match(newLineRegex);
 	}
 	
-	function createStyleObject(classNames, style) {
+	function createStyleObject(classNames) {
+	  var elementStyle = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	  var stylesheet = arguments[2];
+	
 	  return classNames.reduce(function (styleObject, className) {
-	    return (0, _extends3.default)({}, styleObject, style[className]);
-	  }, {});
+	    return (0, _extends3.default)({}, styleObject, stylesheet[className]);
+	  }, elementStyle);
 	}
 	
 	function createClassNameString(classNames) {
@@ -22017,7 +21996,7 @@
 	  } else if (tagName) {
 	    var TagName = tagName;
 	    var childrenCreator = createChildren(style, useInlineStyles);
-	    var props = useInlineStyles ? { style: createStyleObject(properties.className, style) } : { className: createClassNameString(properties.className) };
+	    var props = useInlineStyles ? { style: createStyleObject(properties.className, properties.style, style) } : { className: createClassNameString(properties.className) };
 	    var children = childrenCreator(node.children);
 	    return _react2.default.createElement(
 	      TagName,
@@ -22063,6 +22042,59 @@
 	      startingLineNumber: startingLineNumber
 	    })
 	  );
+	}
+	
+	function createLineElement(_ref4) {
+	  var children = _ref4.children,
+	      lineNumber = _ref4.lineNumber,
+	      lineStyle = _ref4.lineStyle;
+	
+	  return {
+	    type: 'element',
+	    tagName: 'span',
+	    properties: {
+	      className: [],
+	      style: typeof lineStyle === 'function' ? lineStyle(lineNumber) : lineStyle
+	    },
+	    children: children
+	  };
+	}
+	
+	function wrapLinesInSpan(codeTree, lineStyle) {
+	  var _codeTree$value$reduc = codeTree.value.reduce(function (_ref5, node, index) {
+	    var newTree = _ref5.newTree,
+	        lastLineBreakIndex = _ref5.lastLineBreakIndex;
+	
+	    var newLines = void 0;
+	    newLines = node.type === "text" && getNewLines(node.value);
+	    if (newLines) {
+	      (function () {
+	        var splitValue = node.value.split('\n');
+	        splitValue.forEach(function (text, i) {
+	          var lineNumber = newTree.length + 1;
+	          var newChild = { type: 'text', value: text + '\n' };
+	          if (i === 0) {
+	            var children = codeTree.value.slice(lastLineBreakIndex + 1, index).concat(newChild);
+	            newTree.push(createLineElement({ children: children, lineNumber: lineNumber, lineStyle: lineStyle }));
+	          } else if (i === splitValue.length - 1 && codeTree.value[index + 1]) {
+	            codeTree.value[index + 1].children[0].value = '' + text + codeTree.value[index + 1].children[0].value;
+	          } else {
+	            newTree.push(createLineElement({ children: [newChild], lineNumber: lineNumber, lineStyle: lineStyle }));
+	          }
+	        });
+	        lastLineBreakIndex = index;
+	      })();
+	    }
+	    return { newTree: newTree, lastLineBreakIndex: lastLineBreakIndex };
+	  }, { newTree: [], lastLineBreakIndex: -1 }),
+	      newTree = _codeTree$value$reduc.newTree,
+	      lastLineBreakIndex = _codeTree$value$reduc.lastLineBreakIndex;
+	
+	  if (lastLineBreakIndex !== codeTree.value.length - 1) {
+	    var children = codeTree.value.slice(lastLineBreakIndex + 1, codeTree.value.length);
+	    newTree.push(createLineElement({ children: children, lineNumber: newTree.length + 1, lineStyle: lineStyle }));
+	  }
+	  return newTree;
 	}
 
 /***/ },
@@ -39497,93 +39529,106 @@
 	    value: true
 	});
 	exports.default = {
-	    "hljs-comment": {
-	        "color": "#999999"
-	    },
-	    "hljs-quote": {
-	        "color": "#999999"
-	    },
-	    "hljs-variable": {
-	        "color": "#f2777a"
-	    },
-	    "hljs-template-variable": {
-	        "color": "#f2777a"
-	    },
-	    "hljs-tag": {
-	        "color": "#f2777a"
-	    },
-	    "hljs-name": {
-	        "color": "#f2777a"
-	    },
-	    "hljs-selector-id": {
-	        "color": "#f2777a"
-	    },
-	    "hljs-selector-class": {
-	        "color": "#f2777a"
-	    },
-	    "hljs-regexp": {
-	        "color": "#f2777a"
-	    },
-	    "hljs-deletion": {
-	        "color": "#f2777a"
-	    },
-	    "hljs-number": {
-	        "color": "#f99157"
-	    },
-	    "hljs-built_in": {
-	        "color": "#f99157"
-	    },
-	    "hljs-builtin-name": {
-	        "color": "#f99157"
-	    },
-	    "hljs-literal": {
-	        "color": "#f99157"
-	    },
-	    "hljs-type": {
-	        "color": "#f99157"
-	    },
-	    "hljs-params": {
-	        "color": "#f99157"
-	    },
-	    "hljs-meta": {
-	        "color": "#f99157"
-	    },
-	    "hljs-link": {
-	        "color": "#f99157"
-	    },
-	    "hljs-attribute": {
-	        "color": "#ffcc66"
-	    },
-	    "hljs-string": {
-	        "color": "#99cc99"
-	    },
-	    "hljs-symbol": {
-	        "color": "#99cc99"
-	    },
-	    "hljs-bullet": {
-	        "color": "#99cc99"
-	    },
-	    "hljs-addition": {
-	        "color": "#99cc99"
-	    },
-	    "hljs-title": {
-	        "color": "#6699cc"
-	    },
-	    "hljs-section": {
-	        "color": "#6699cc"
-	    },
-	    "hljs-keyword": {
-	        "color": "#cc99cc"
-	    },
-	    "hljs-selector-tag": {
-	        "color": "#cc99cc"
-	    },
 	    "hljs": {
 	        "display": "block",
 	        "overflowX": "auto",
-	        "background": "#2d2d2d",
-	        "color": "#cccccc",
-	        "padding": "0.5em"
+	        "padding": "0.5em",
+	        "color": "#000",
+	        "background": "#f8f8ff"
+	    },
+	    "hljs-comment": {
+	        "color": "#408080",
+	        "fontStyle": "italic"
+	    },
+	    "hljs-quote": {
+	        "color": "#408080",
+	        "fontStyle": "italic"
+	    },
+	    "hljs-keyword": {
+	        "color": "#954121"
+	    },
+	    "hljs-selector-tag": {
+	        "color": "#954121"
+	    },
+	    "hljs-literal": {
+	        "color": "#954121"
+	    },
+	    "hljs-subst": {
+	        "color": "#954121"
+	    },
+	    "hljs-number": {
+	        "color": "#40a070"
+	    },
+	    "hljs-string": {
+	        "color": "#219161"
+	    },
+	    "hljs-doctag": {
+	        "color": "#219161"
+	    },
+	    "hljs-selector-id": {
+	        "color": "#19469d"
+	    },
+	    "hljs-selector-class": {
+	        "color": "#19469d"
+	    },
+	    "hljs-section": {
+	        "color": "#19469d"
+	    },
+	    "hljs-type": {
+	        "color": "#19469d"
+	    },
+	    "hljs-params": {
+	        "color": "#00f"
+	    },
+	    "hljs-title": {
+	        "color": "#458",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-tag": {
+	        "color": "#000080",
+	        "fontWeight": "normal"
+	    },
+	    "hljs-name": {
+	        "color": "#000080",
+	        "fontWeight": "normal"
+	    },
+	    "hljs-attribute": {
+	        "color": "#000080",
+	        "fontWeight": "normal"
+	    },
+	    "hljs-variable": {
+	        "color": "#008080"
+	    },
+	    "hljs-template-variable": {
+	        "color": "#008080"
+	    },
+	    "hljs-regexp": {
+	        "color": "#b68"
+	    },
+	    "hljs-link": {
+	        "color": "#b68"
+	    },
+	    "hljs-symbol": {
+	        "color": "#990073"
+	    },
+	    "hljs-bullet": {
+	        "color": "#990073"
+	    },
+	    "hljs-built_in": {
+	        "color": "#0086b3"
+	    },
+	    "hljs-builtin-name": {
+	        "color": "#0086b3"
+	    },
+	    "hljs-meta": {
+	        "color": "#999",
+	        "fontWeight": "bold"
+	    },
+	    "hljs-deletion": {
+	        "background": "#fdd"
+	    },
+	    "hljs-addition": {
+	        "background": "#dfd"
 	    },
 	    "hljs-emphasis": {
 	        "fontStyle": "italic"
@@ -39670,84 +39715,84 @@
 		"./default.js": 467,
 		"./defaultStyle": 468,
 		"./defaultStyle.js": 468,
-		"./docco": 469,
-		"./docco.js": 469,
-		"./dracula": 470,
-		"./dracula.js": 470,
-		"./far": 471,
-		"./far.js": 471,
-		"./foundation": 472,
-		"./foundation.js": 472,
-		"./github": 473,
-		"./github-gist": 474,
-		"./github-gist.js": 474,
-		"./github.js": 473,
-		"./googlecode": 475,
-		"./googlecode.js": 475,
-		"./grayscale": 476,
-		"./grayscale.js": 476,
-		"./gruvbox-dark": 477,
-		"./gruvbox-dark.js": 477,
-		"./gruvbox-light": 478,
-		"./gruvbox-light.js": 478,
-		"./hopscotch": 479,
-		"./hopscotch.js": 479,
-		"./hybrid": 480,
-		"./hybrid.js": 480,
-		"./idea": 481,
-		"./idea.js": 481,
-		"./index": 482,
-		"./index.js": 482,
-		"./ir-black": 483,
-		"./ir-black.js": 483,
-		"./kimbie.dark": 484,
-		"./kimbie.dark.js": 484,
-		"./kimbie.light": 485,
-		"./kimbie.light.js": 485,
-		"./magula": 486,
-		"./magula.js": 486,
-		"./mono-blue": 487,
-		"./mono-blue.js": 487,
-		"./monokai": 489,
-		"./monokai-sublime": 488,
-		"./monokai-sublime.js": 488,
-		"./monokai.js": 489,
-		"./obsidian": 490,
-		"./obsidian.js": 490,
-		"./ocean": 491,
-		"./ocean.js": 491,
-		"./paraiso-dark": 492,
-		"./paraiso-dark.js": 492,
-		"./paraiso-light": 493,
-		"./paraiso-light.js": 493,
-		"./pojoaque": 494,
-		"./pojoaque.js": 494,
-		"./purebasic": 495,
-		"./purebasic.js": 495,
-		"./qtcreator_dark": 496,
-		"./qtcreator_dark.js": 496,
-		"./qtcreator_light": 497,
-		"./qtcreator_light.js": 497,
-		"./railscasts": 498,
-		"./railscasts.js": 498,
-		"./rainbow": 499,
-		"./rainbow.js": 499,
-		"./school-book": 500,
-		"./school-book.js": 500,
-		"./solarized-dark": 501,
-		"./solarized-dark.js": 501,
-		"./solarized-light": 502,
-		"./solarized-light.js": 502,
-		"./sunburst": 503,
-		"./sunburst.js": 503,
+		"./docco": 432,
+		"./docco.js": 432,
+		"./dracula": 469,
+		"./dracula.js": 469,
+		"./far": 470,
+		"./far.js": 470,
+		"./foundation": 471,
+		"./foundation.js": 471,
+		"./github": 472,
+		"./github-gist": 473,
+		"./github-gist.js": 473,
+		"./github.js": 472,
+		"./googlecode": 474,
+		"./googlecode.js": 474,
+		"./grayscale": 475,
+		"./grayscale.js": 475,
+		"./gruvbox-dark": 476,
+		"./gruvbox-dark.js": 476,
+		"./gruvbox-light": 477,
+		"./gruvbox-light.js": 477,
+		"./hopscotch": 478,
+		"./hopscotch.js": 478,
+		"./hybrid": 479,
+		"./hybrid.js": 479,
+		"./idea": 480,
+		"./idea.js": 480,
+		"./index": 481,
+		"./index.js": 481,
+		"./ir-black": 482,
+		"./ir-black.js": 482,
+		"./kimbie.dark": 483,
+		"./kimbie.dark.js": 483,
+		"./kimbie.light": 484,
+		"./kimbie.light.js": 484,
+		"./magula": 485,
+		"./magula.js": 485,
+		"./mono-blue": 486,
+		"./mono-blue.js": 486,
+		"./monokai": 488,
+		"./monokai-sublime": 487,
+		"./monokai-sublime.js": 487,
+		"./monokai.js": 488,
+		"./obsidian": 489,
+		"./obsidian.js": 489,
+		"./ocean": 490,
+		"./ocean.js": 490,
+		"./paraiso-dark": 491,
+		"./paraiso-dark.js": 491,
+		"./paraiso-light": 492,
+		"./paraiso-light.js": 492,
+		"./pojoaque": 493,
+		"./pojoaque.js": 493,
+		"./purebasic": 494,
+		"./purebasic.js": 494,
+		"./qtcreator_dark": 495,
+		"./qtcreator_dark.js": 495,
+		"./qtcreator_light": 496,
+		"./qtcreator_light.js": 496,
+		"./railscasts": 497,
+		"./railscasts.js": 497,
+		"./rainbow": 498,
+		"./rainbow.js": 498,
+		"./school-book": 499,
+		"./school-book.js": 499,
+		"./solarized-dark": 500,
+		"./solarized-dark.js": 500,
+		"./solarized-light": 501,
+		"./solarized-light.js": 501,
+		"./sunburst": 502,
+		"./sunburst.js": 502,
 		"./tomorrow": 507,
 		"./tomorrow-night": 506,
-		"./tomorrow-night-blue": 504,
-		"./tomorrow-night-blue.js": 504,
-		"./tomorrow-night-bright": 505,
-		"./tomorrow-night-bright.js": 505,
-		"./tomorrow-night-eighties": 432,
-		"./tomorrow-night-eighties.js": 432,
+		"./tomorrow-night-blue": 503,
+		"./tomorrow-night-blue.js": 503,
+		"./tomorrow-night-bright": 504,
+		"./tomorrow-night-bright.js": 504,
+		"./tomorrow-night-eighties": 505,
+		"./tomorrow-night-eighties.js": 505,
 		"./tomorrow-night.js": 506,
 		"./tomorrow.js": 507,
 		"./vs": 508,
@@ -43423,125 +43468,6 @@
 	        "display": "block",
 	        "overflowX": "auto",
 	        "padding": "0.5em",
-	        "color": "#000",
-	        "background": "#f8f8ff"
-	    },
-	    "hljs-comment": {
-	        "color": "#408080",
-	        "fontStyle": "italic"
-	    },
-	    "hljs-quote": {
-	        "color": "#408080",
-	        "fontStyle": "italic"
-	    },
-	    "hljs-keyword": {
-	        "color": "#954121"
-	    },
-	    "hljs-selector-tag": {
-	        "color": "#954121"
-	    },
-	    "hljs-literal": {
-	        "color": "#954121"
-	    },
-	    "hljs-subst": {
-	        "color": "#954121"
-	    },
-	    "hljs-number": {
-	        "color": "#40a070"
-	    },
-	    "hljs-string": {
-	        "color": "#219161"
-	    },
-	    "hljs-doctag": {
-	        "color": "#219161"
-	    },
-	    "hljs-selector-id": {
-	        "color": "#19469d"
-	    },
-	    "hljs-selector-class": {
-	        "color": "#19469d"
-	    },
-	    "hljs-section": {
-	        "color": "#19469d"
-	    },
-	    "hljs-type": {
-	        "color": "#19469d"
-	    },
-	    "hljs-params": {
-	        "color": "#00f"
-	    },
-	    "hljs-title": {
-	        "color": "#458",
-	        "fontWeight": "bold"
-	    },
-	    "hljs-tag": {
-	        "color": "#000080",
-	        "fontWeight": "normal"
-	    },
-	    "hljs-name": {
-	        "color": "#000080",
-	        "fontWeight": "normal"
-	    },
-	    "hljs-attribute": {
-	        "color": "#000080",
-	        "fontWeight": "normal"
-	    },
-	    "hljs-variable": {
-	        "color": "#008080"
-	    },
-	    "hljs-template-variable": {
-	        "color": "#008080"
-	    },
-	    "hljs-regexp": {
-	        "color": "#b68"
-	    },
-	    "hljs-link": {
-	        "color": "#b68"
-	    },
-	    "hljs-symbol": {
-	        "color": "#990073"
-	    },
-	    "hljs-bullet": {
-	        "color": "#990073"
-	    },
-	    "hljs-built_in": {
-	        "color": "#0086b3"
-	    },
-	    "hljs-builtin-name": {
-	        "color": "#0086b3"
-	    },
-	    "hljs-meta": {
-	        "color": "#999",
-	        "fontWeight": "bold"
-	    },
-	    "hljs-deletion": {
-	        "background": "#fdd"
-	    },
-	    "hljs-addition": {
-	        "background": "#dfd"
-	    },
-	    "hljs-emphasis": {
-	        "fontStyle": "italic"
-	    },
-	    "hljs-strong": {
-	        "fontWeight": "bold"
-	    }
-	};
-
-/***/ },
-/* 470 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.default = {
-	    "hljs": {
-	        "display": "block",
-	        "overflowX": "auto",
-	        "padding": "0.5em",
 	        "background": "#282a36",
 	        "color": "#f8f8f2"
 	    },
@@ -43630,7 +43556,7 @@
 	};
 
 /***/ },
-/* 471 */
+/* 470 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -43743,7 +43669,7 @@
 	};
 
 /***/ },
-/* 472 */
+/* 471 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -43851,7 +43777,7 @@
 	};
 
 /***/ },
-/* 473 */
+/* 472 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -43977,7 +43903,7 @@
 	};
 
 /***/ },
-/* 474 */
+/* 473 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44079,7 +44005,7 @@
 	};
 
 /***/ },
-/* 475 */
+/* 474 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44202,7 +44128,7 @@
 	};
 
 /***/ },
-/* 476 */
+/* 475 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44328,7 +44254,7 @@
 	};
 
 /***/ },
-/* 477 */
+/* 476 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44481,7 +44407,7 @@
 	};
 
 /***/ },
-/* 478 */
+/* 477 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44634,7 +44560,7 @@
 	};
 
 /***/ },
-/* 479 */
+/* 478 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44745,7 +44671,7 @@
 	};
 
 /***/ },
-/* 480 */
+/* 479 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44881,7 +44807,7 @@
 	};
 
 /***/ },
-/* 481 */
+/* 480 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -45010,7 +44936,7 @@
 	};
 
 /***/ },
-/* 482 */
+/* 481 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45325,7 +45251,7 @@
 	  }
 	});
 	
-	var _docco = __webpack_require__(469);
+	var _docco = __webpack_require__(432);
 	
 	Object.defineProperty(exports, 'docco', {
 	  enumerable: true,
@@ -45334,7 +45260,7 @@
 	  }
 	});
 	
-	var _dracula = __webpack_require__(470);
+	var _dracula = __webpack_require__(469);
 	
 	Object.defineProperty(exports, 'dracula', {
 	  enumerable: true,
@@ -45343,7 +45269,7 @@
 	  }
 	});
 	
-	var _far = __webpack_require__(471);
+	var _far = __webpack_require__(470);
 	
 	Object.defineProperty(exports, 'far', {
 	  enumerable: true,
@@ -45352,7 +45278,7 @@
 	  }
 	});
 	
-	var _foundation = __webpack_require__(472);
+	var _foundation = __webpack_require__(471);
 	
 	Object.defineProperty(exports, 'foundation', {
 	  enumerable: true,
@@ -45361,7 +45287,7 @@
 	  }
 	});
 	
-	var _githubGist = __webpack_require__(474);
+	var _githubGist = __webpack_require__(473);
 	
 	Object.defineProperty(exports, 'githubGist', {
 	  enumerable: true,
@@ -45370,7 +45296,7 @@
 	  }
 	});
 	
-	var _github = __webpack_require__(473);
+	var _github = __webpack_require__(472);
 	
 	Object.defineProperty(exports, 'github', {
 	  enumerable: true,
@@ -45379,7 +45305,7 @@
 	  }
 	});
 	
-	var _googlecode = __webpack_require__(475);
+	var _googlecode = __webpack_require__(474);
 	
 	Object.defineProperty(exports, 'googlecode', {
 	  enumerable: true,
@@ -45388,7 +45314,7 @@
 	  }
 	});
 	
-	var _grayscale = __webpack_require__(476);
+	var _grayscale = __webpack_require__(475);
 	
 	Object.defineProperty(exports, 'grayscale', {
 	  enumerable: true,
@@ -45397,7 +45323,7 @@
 	  }
 	});
 	
-	var _gruvboxDark = __webpack_require__(477);
+	var _gruvboxDark = __webpack_require__(476);
 	
 	Object.defineProperty(exports, 'gruvboxDark', {
 	  enumerable: true,
@@ -45406,7 +45332,7 @@
 	  }
 	});
 	
-	var _gruvboxLight = __webpack_require__(478);
+	var _gruvboxLight = __webpack_require__(477);
 	
 	Object.defineProperty(exports, 'gruvboxLight', {
 	  enumerable: true,
@@ -45415,7 +45341,7 @@
 	  }
 	});
 	
-	var _hopscotch = __webpack_require__(479);
+	var _hopscotch = __webpack_require__(478);
 	
 	Object.defineProperty(exports, 'hopscotch', {
 	  enumerable: true,
@@ -45424,7 +45350,7 @@
 	  }
 	});
 	
-	var _hybrid = __webpack_require__(480);
+	var _hybrid = __webpack_require__(479);
 	
 	Object.defineProperty(exports, 'hybrid', {
 	  enumerable: true,
@@ -45433,7 +45359,7 @@
 	  }
 	});
 	
-	var _idea = __webpack_require__(481);
+	var _idea = __webpack_require__(480);
 	
 	Object.defineProperty(exports, 'idea', {
 	  enumerable: true,
@@ -45442,7 +45368,7 @@
 	  }
 	});
 	
-	var _irBlack = __webpack_require__(483);
+	var _irBlack = __webpack_require__(482);
 	
 	Object.defineProperty(exports, 'irBlack', {
 	  enumerable: true,
@@ -45451,7 +45377,7 @@
 	  }
 	});
 	
-	var _kimbie = __webpack_require__(484);
+	var _kimbie = __webpack_require__(483);
 	
 	Object.defineProperty(exports, 'kimbieDark', {
 	  enumerable: true,
@@ -45460,7 +45386,7 @@
 	  }
 	});
 	
-	var _kimbie2 = __webpack_require__(485);
+	var _kimbie2 = __webpack_require__(484);
 	
 	Object.defineProperty(exports, 'kimbieLight', {
 	  enumerable: true,
@@ -45469,7 +45395,7 @@
 	  }
 	});
 	
-	var _magula = __webpack_require__(486);
+	var _magula = __webpack_require__(485);
 	
 	Object.defineProperty(exports, 'magula', {
 	  enumerable: true,
@@ -45478,7 +45404,7 @@
 	  }
 	});
 	
-	var _monoBlue = __webpack_require__(487);
+	var _monoBlue = __webpack_require__(486);
 	
 	Object.defineProperty(exports, 'monoBlue', {
 	  enumerable: true,
@@ -45487,7 +45413,7 @@
 	  }
 	});
 	
-	var _monokaiSublime = __webpack_require__(488);
+	var _monokaiSublime = __webpack_require__(487);
 	
 	Object.defineProperty(exports, 'monokaiSublime', {
 	  enumerable: true,
@@ -45496,7 +45422,7 @@
 	  }
 	});
 	
-	var _monokai = __webpack_require__(489);
+	var _monokai = __webpack_require__(488);
 	
 	Object.defineProperty(exports, 'monokai', {
 	  enumerable: true,
@@ -45505,7 +45431,7 @@
 	  }
 	});
 	
-	var _obsidian = __webpack_require__(490);
+	var _obsidian = __webpack_require__(489);
 	
 	Object.defineProperty(exports, 'obsidian', {
 	  enumerable: true,
@@ -45514,7 +45440,7 @@
 	  }
 	});
 	
-	var _ocean = __webpack_require__(491);
+	var _ocean = __webpack_require__(490);
 	
 	Object.defineProperty(exports, 'ocean', {
 	  enumerable: true,
@@ -45523,7 +45449,7 @@
 	  }
 	});
 	
-	var _paraisoDark = __webpack_require__(492);
+	var _paraisoDark = __webpack_require__(491);
 	
 	Object.defineProperty(exports, 'paraisoDark', {
 	  enumerable: true,
@@ -45532,7 +45458,7 @@
 	  }
 	});
 	
-	var _paraisoLight = __webpack_require__(493);
+	var _paraisoLight = __webpack_require__(492);
 	
 	Object.defineProperty(exports, 'paraisoLight', {
 	  enumerable: true,
@@ -45541,7 +45467,7 @@
 	  }
 	});
 	
-	var _pojoaque = __webpack_require__(494);
+	var _pojoaque = __webpack_require__(493);
 	
 	Object.defineProperty(exports, 'pojoaque', {
 	  enumerable: true,
@@ -45550,7 +45476,7 @@
 	  }
 	});
 	
-	var _purebasic = __webpack_require__(495);
+	var _purebasic = __webpack_require__(494);
 	
 	Object.defineProperty(exports, 'purebasic', {
 	  enumerable: true,
@@ -45559,7 +45485,7 @@
 	  }
 	});
 	
-	var _qtcreator_dark = __webpack_require__(496);
+	var _qtcreator_dark = __webpack_require__(495);
 	
 	Object.defineProperty(exports, 'qtcreatorDark', {
 	  enumerable: true,
@@ -45568,7 +45494,7 @@
 	  }
 	});
 	
-	var _qtcreator_light = __webpack_require__(497);
+	var _qtcreator_light = __webpack_require__(496);
 	
 	Object.defineProperty(exports, 'qtcreatorLight', {
 	  enumerable: true,
@@ -45577,7 +45503,7 @@
 	  }
 	});
 	
-	var _railscasts = __webpack_require__(498);
+	var _railscasts = __webpack_require__(497);
 	
 	Object.defineProperty(exports, 'railscasts', {
 	  enumerable: true,
@@ -45586,7 +45512,7 @@
 	  }
 	});
 	
-	var _rainbow = __webpack_require__(499);
+	var _rainbow = __webpack_require__(498);
 	
 	Object.defineProperty(exports, 'rainbow', {
 	  enumerable: true,
@@ -45595,7 +45521,7 @@
 	  }
 	});
 	
-	var _schoolBook = __webpack_require__(500);
+	var _schoolBook = __webpack_require__(499);
 	
 	Object.defineProperty(exports, 'schoolBook', {
 	  enumerable: true,
@@ -45604,7 +45530,7 @@
 	  }
 	});
 	
-	var _solarizedDark = __webpack_require__(501);
+	var _solarizedDark = __webpack_require__(500);
 	
 	Object.defineProperty(exports, 'solarizedDark', {
 	  enumerable: true,
@@ -45613,7 +45539,7 @@
 	  }
 	});
 	
-	var _solarizedLight = __webpack_require__(502);
+	var _solarizedLight = __webpack_require__(501);
 	
 	Object.defineProperty(exports, 'solarizedLight', {
 	  enumerable: true,
@@ -45622,7 +45548,7 @@
 	  }
 	});
 	
-	var _sunburst = __webpack_require__(503);
+	var _sunburst = __webpack_require__(502);
 	
 	Object.defineProperty(exports, 'sunburst', {
 	  enumerable: true,
@@ -45631,7 +45557,7 @@
 	  }
 	});
 	
-	var _tomorrowNightBlue = __webpack_require__(504);
+	var _tomorrowNightBlue = __webpack_require__(503);
 	
 	Object.defineProperty(exports, 'tomorrowNightBlue', {
 	  enumerable: true,
@@ -45640,7 +45566,7 @@
 	  }
 	});
 	
-	var _tomorrowNightBright = __webpack_require__(505);
+	var _tomorrowNightBright = __webpack_require__(504);
 	
 	Object.defineProperty(exports, 'tomorrowNightBright', {
 	  enumerable: true,
@@ -45649,7 +45575,7 @@
 	  }
 	});
 	
-	var _tomorrowNightEighties = __webpack_require__(432);
+	var _tomorrowNightEighties = __webpack_require__(505);
 	
 	Object.defineProperty(exports, 'tomorrowNightEighties', {
 	  enumerable: true,
@@ -45715,7 +45641,7 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ },
-/* 483 */
+/* 482 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -45821,7 +45747,7 @@
 	};
 
 /***/ },
-/* 484 */
+/* 483 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -45930,7 +45856,7 @@
 	};
 
 /***/ },
-/* 485 */
+/* 484 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46039,7 +45965,7 @@
 	};
 
 /***/ },
-/* 486 */
+/* 485 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46150,7 +46076,7 @@
 	};
 
 /***/ },
-/* 487 */
+/* 486 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46256,7 +46182,7 @@
 	};
 
 /***/ },
-/* 488 */
+/* 487 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46382,7 +46308,7 @@
 	};
 
 /***/ },
-/* 489 */
+/* 488 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46506,7 +46432,7 @@
 	};
 
 /***/ },
-/* 490 */
+/* 489 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46633,7 +46559,7 @@
 	};
 
 /***/ },
-/* 491 */
+/* 490 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46739,7 +46665,7 @@
 	};
 
 /***/ },
-/* 492 */
+/* 491 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46845,7 +46771,7 @@
 	};
 
 /***/ },
-/* 493 */
+/* 492 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46951,7 +46877,7 @@
 	};
 
 /***/ },
-/* 494 */
+/* 493 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47065,7 +46991,7 @@
 	};
 
 /***/ },
-/* 495 */
+/* 494 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47193,7 +47119,7 @@
 	};
 
 /***/ },
-/* 496 */
+/* 495 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47322,7 +47248,7 @@
 	};
 
 /***/ },
-/* 497 */
+/* 496 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47451,7 +47377,7 @@
 	};
 
 /***/ },
-/* 498 */
+/* 497 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47569,7 +47495,7 @@
 	};
 
 /***/ },
-/* 499 */
+/* 498 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47688,7 +47614,7 @@
 	};
 
 /***/ },
-/* 500 */
+/* 499 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47800,7 +47726,7 @@
 	};
 
 /***/ },
-/* 501 */
+/* 500 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -47924,7 +47850,7 @@
 	};
 
 /***/ },
-/* 502 */
+/* 501 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -48048,7 +47974,7 @@
 	};
 
 /***/ },
-/* 503 */
+/* 502 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -48163,7 +48089,7 @@
 	};
 
 /***/ },
-/* 504 */
+/* 503 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -48269,7 +48195,7 @@
 	};
 
 /***/ },
-/* 505 */
+/* 504 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -48364,6 +48290,112 @@
 	        "overflowX": "auto",
 	        "background": "black",
 	        "color": "#eaeaea",
+	        "padding": "0.5em"
+	    },
+	    "hljs-emphasis": {
+	        "fontStyle": "italic"
+	    },
+	    "hljs-strong": {
+	        "fontWeight": "bold"
+	    }
+	};
+
+/***/ },
+/* 505 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = {
+	    "hljs-comment": {
+	        "color": "#999999"
+	    },
+	    "hljs-quote": {
+	        "color": "#999999"
+	    },
+	    "hljs-variable": {
+	        "color": "#f2777a"
+	    },
+	    "hljs-template-variable": {
+	        "color": "#f2777a"
+	    },
+	    "hljs-tag": {
+	        "color": "#f2777a"
+	    },
+	    "hljs-name": {
+	        "color": "#f2777a"
+	    },
+	    "hljs-selector-id": {
+	        "color": "#f2777a"
+	    },
+	    "hljs-selector-class": {
+	        "color": "#f2777a"
+	    },
+	    "hljs-regexp": {
+	        "color": "#f2777a"
+	    },
+	    "hljs-deletion": {
+	        "color": "#f2777a"
+	    },
+	    "hljs-number": {
+	        "color": "#f99157"
+	    },
+	    "hljs-built_in": {
+	        "color": "#f99157"
+	    },
+	    "hljs-builtin-name": {
+	        "color": "#f99157"
+	    },
+	    "hljs-literal": {
+	        "color": "#f99157"
+	    },
+	    "hljs-type": {
+	        "color": "#f99157"
+	    },
+	    "hljs-params": {
+	        "color": "#f99157"
+	    },
+	    "hljs-meta": {
+	        "color": "#f99157"
+	    },
+	    "hljs-link": {
+	        "color": "#f99157"
+	    },
+	    "hljs-attribute": {
+	        "color": "#ffcc66"
+	    },
+	    "hljs-string": {
+	        "color": "#99cc99"
+	    },
+	    "hljs-symbol": {
+	        "color": "#99cc99"
+	    },
+	    "hljs-bullet": {
+	        "color": "#99cc99"
+	    },
+	    "hljs-addition": {
+	        "color": "#99cc99"
+	    },
+	    "hljs-title": {
+	        "color": "#6699cc"
+	    },
+	    "hljs-section": {
+	        "color": "#6699cc"
+	    },
+	    "hljs-keyword": {
+	        "color": "#cc99cc"
+	    },
+	    "hljs-selector-tag": {
+	        "color": "#cc99cc"
+	    },
+	    "hljs": {
+	        "display": "block",
+	        "overflowX": "auto",
+	        "background": "#2d2d2d",
+	        "color": "#cccccc",
 	        "padding": "0.5em"
 	    },
 	    "hljs-emphasis": {
@@ -49030,4 +49062,4 @@
 
 /***/ }
 /******/ ]);
-//# sourceMappingURL=demo.js.map
+//# sourceMappingURL=demo-build.js.map
