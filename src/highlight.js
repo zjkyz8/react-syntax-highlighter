@@ -9,7 +9,7 @@ function getNewLines(str) {
 
 function getLineNumbers({ lines, startingLineNumber, style }) {
   return lines.map((_, i) => {
-    const number = i + startingLineNumber;
+    const number = _.ln;
     return (
       <span 
         key={`line-${i}`}
@@ -23,7 +23,7 @@ function getLineNumbers({ lines, startingLineNumber, style }) {
 }
 
 function LineNumbers({ 
-  codeString, 
+  codes, 
   containerStyle = {float: 'left', paddingRight: '10px'}, 
   numberStyle = {},
   startingLineNumber 
@@ -31,7 +31,7 @@ function LineNumbers({
   return (
     <code style={containerStyle}>
       {getLineNumbers({
-        lines: codeString.replace(/\n$/, '').split('\n'), 
+        lines: codes,
         style: numberStyle,
         startingLineNumber
       })}
@@ -133,7 +133,7 @@ function defaultRenderer({ rows, stylesheet, useInlineStyles }) {
 export default function (lowlight, defaultStyle) {
  return function SyntaxHighlighter({
   language,
-  children,
+  codes,
   style = defaultStyle,
   customStyle = {},
   codeTagProps = {},
@@ -155,10 +155,11 @@ export default function (lowlight, defaultStyle) {
     */
     wrapLines = renderer && wrapLines === undefined ? true : wrapLines;
     renderer = renderer || defaultRenderer;
+    let sourceCode = codes.map(code => code.text).join('\n');
     const codeTree = (
       language ? 
-      lowlight.highlight(language, children) : 
-      lowlight.highlightAuto(children)
+      lowlight.highlight(language, sourceCode) : 
+      lowlight.highlightAuto(sourceCode)
     );
     const defaultPreStyle = style.hljs || { backgroundColor: '#fff' };
     const preProps = (
@@ -177,7 +178,7 @@ export default function (lowlight, defaultStyle) {
         containerStyle={lineNumberContainerStyle}
         numberStyle={lineNumberStyle}
         startingLineNumber={startingLineNumber}
-        codeString={children}
+        codes={code}
       />
       :
       null
