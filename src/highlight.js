@@ -9,7 +9,7 @@ function getNewLines(str) {
 
 function getLineNumbers({ lines, startingLineNumber, style }) {
   return lines.map((_, i) => {
-    const number = _.ln;
+    const number = _.ln || '';
     return (
       <span 
         key={`line-${i}`}
@@ -89,8 +89,8 @@ function wrapLinesInSpan(codeTree, lineStyle) {
           const children = tree.slice(
             lastLineBreakIndex + 1, 
             index
-          ).concat(newChild);
-          newTree.push(createLineElement({ children, lineNumber, lineStyle })); 
+          ).concat(newChild);          
+          newTree.push(createLineElement({ children, lineNumber, lineStyle})); 
         } else if (i === splitValue.length - 1) {
           const stringChild = (
             tree[index + 1] && 
@@ -133,7 +133,7 @@ function defaultRenderer({ rows, stylesheet, useInlineStyles }) {
 export default function (lowlight, defaultStyle) {
  return function SyntaxHighlighter({
   language,
-  codes,
+  children,
   style = defaultStyle,
   customStyle = {},
   codeTagProps = {},
@@ -155,7 +155,7 @@ export default function (lowlight, defaultStyle) {
     */
     wrapLines = renderer && wrapLines === undefined ? true : wrapLines;
     renderer = renderer || defaultRenderer;
-    let sourceCode = codes.map(code => code.text).join('\n');
+    let sourceCode = children.map(code => code.text).join('\n');
     const codeTree = (
       language ? 
       lowlight.highlight(language, sourceCode) : 
@@ -169,8 +169,8 @@ export default function (lowlight, defaultStyle) {
       :
       Object.assign({}, rest, { className: 'hljs'})
     );
-
     const tree = wrapLines ? wrapLinesInSpan(codeTree, lineStyle) : codeTree.value;
+
     const lineNumbers = (
       showLineNumbers
       ?
@@ -178,7 +178,7 @@ export default function (lowlight, defaultStyle) {
         containerStyle={lineNumberContainerStyle}
         numberStyle={lineNumberStyle}
         startingLineNumber={startingLineNumber}
-        codes={code}
+        codes={children}
       />
       :
       null
