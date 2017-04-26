@@ -7,7 +7,7 @@ function getNewLines(str) {
 }
 
 
-function getLineNumbers({ lines, startingLineNumber, style }) {
+function getLineNumbers({ lines, startingLineNumber, style, onLineClick }) {
   return lines.map((_, i) => {
     const number = _.ln || '';
     return (
@@ -15,6 +15,7 @@ function getLineNumbers({ lines, startingLineNumber, style }) {
         key={`line-${i}`}
         className='react-syntax-highlighter-line-number' 
         style={typeof style === 'function' ? style(number) : style}
+        onClick={onLineClick.bind(this, i)}
       >
         {`${number}\n`}
       </span> 
@@ -26,6 +27,7 @@ function LineNumbers({
   codes, 
   containerStyle = {float: 'left', paddingRight: '10px'}, 
   numberStyle = {},
+  onLineClick,
   startingLineNumber 
 }) {
   return (
@@ -33,7 +35,8 @@ function LineNumbers({
       {getLineNumbers({
         lines: codes,
         style: numberStyle,
-        startingLineNumber
+        startingLineNumber,
+        onLineClick
       })}
     </code>
   );
@@ -51,7 +54,9 @@ function createLineElement({ children, lineNumber, lineStyle, className = [] }) 
         lineStyle(lineNumber)
         :
         lineStyle
-      )
+      ),
+      onClick: (()=>console.log('ddddd')).bind(this)
+
     },
     children
   }
@@ -119,13 +124,14 @@ function wrapLinesInSpan(codeTree, lineStyle) {
   return newTree;
 }
 
-function defaultRenderer({ rows, stylesheet, useInlineStyles }) {
+function defaultRenderer({ rows, stylesheet, useInlineStyles, onLineClick }) {
   return (
     rows.map((node, i) => createElement({
       node,
       stylesheet,
       useInlineStyles,
-      key: `code-segement${i}`
+      key: `code-segement${i}`,
+      onClick: () => onLineClick(i)
     }))
   );
 }
@@ -144,6 +150,7 @@ export default function (lowlight, defaultStyle) {
   lineNumberStyle,
   wrapLines,
   lineStyle = {},
+  onLineClick = (lineNumber) => {console.log(lineNumber + 'clicked')},
   renderer,
   PreTag='pre',
   CodeTag='code',
@@ -179,6 +186,7 @@ export default function (lowlight, defaultStyle) {
         numberStyle={lineNumberStyle}
         startingLineNumber={startingLineNumber}
         codes={children}
+        onLineClick={onLineClick}
       />
       :
       null
@@ -187,7 +195,7 @@ export default function (lowlight, defaultStyle) {
       <PreTag {...preProps}>
         {lineNumbers}
         <CodeTag {...codeTagProps}>
-          {renderer({ rows: tree, stylesheet: style, useInlineStyles })}
+          {renderer({ rows: tree, stylesheet: style, useInlineStyles, onLineClick })}
         </CodeTag>
       </PreTag>
     );

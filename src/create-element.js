@@ -24,7 +24,7 @@ export function createChildren(stylesheet, useInlineStyles) {
   }
 }
 
-export default function createElement({ node, stylesheet, style = {}, useInlineStyles, key }) {
+export default function createElement({ node, stylesheet, style = {}, useInlineStyles, key, onClick = ()=>{}  }) {
   const { properties, type, tagName: TagName, value } = node;
   if (type === 'text') {
     return value;
@@ -38,10 +38,12 @@ export default function createElement({ node, stylesheet, style = {}, useInlineS
           properties.className, 
           Object.assign({}, properties.style, style), 
           stylesheet
-        ) 
+        ),
+        onClick: onClick
       }
       :
-      { className: createClassNameString(properties.className) }
+      { className: createClassNameString(properties.className), onClick: onClick }
+      
     );
     const children = childrenCreator(node.children);
     return <TagName key={key} {...props}>{children}</TagName>;
